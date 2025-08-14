@@ -43,7 +43,7 @@ const SocialSignUp = () => {
           </svg>
         </button>
 
-        <button className='flex w-full items-center justify-center gap-2.5 rounded-lg p-3.5 border border-gray-200 text-black hover:bg-neutral-100 hover:cursor-pointer'>
+        {/* <button className='flex w-full items-center justify-center gap-2.5 rounded-lg p-3.5 border border-gray-200 text-black hover:bg-neutral-100 hover:cursor-pointer'>
           Sign Up
           <svg
             width='22'
@@ -56,7 +56,7 @@ const SocialSignUp = () => {
               fill='currentColor'
             />
           </svg>
-        </button>
+        </button> */}
       </div>
     </>
   )

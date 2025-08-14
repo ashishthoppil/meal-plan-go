@@ -68,7 +68,7 @@ const Footer: FC = () => {
         </div>
         <div className='border-t border-grey/15 py-5 flex flex-col sm:flex-row justify-between sm:items-center gap-5'>
           <p className='text-center md:text-left text-sm text-black/70'>
-            @2025 - BitePlan. All Rights Reserved.
+            @2025 - MealPlanGo. All Rights Reserved.
           </p>
 
           <p className='text-center md:text-left text-sm text-black/70'>

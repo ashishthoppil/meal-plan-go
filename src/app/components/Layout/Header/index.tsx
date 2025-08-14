@@ -9,6 +9,7 @@ import Signin from '@/app/components/Auth/SignIn'
 import SignUp from '@/app/components/Auth/SignUp'
 import { Icon } from '@iconify/react/dist/iconify.js'
 import { HeaderItem } from '@/app/types/menu'
+import { checkAuth, supabase } from '@/utils/supabase/client'
 
 const Header: React.FC = () => {
   const [headerLink, setHeaderLink] = useState<HeaderItem[]>([])
@@ -22,6 +23,16 @@ const Header: React.FC = () => {
   const signInRef = useRef<HTMLDivElement>(null)
   const signUpRef = useRef<HTMLDivElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
+
+  const [user, setUser] = useState<any>();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userInfo = await checkAuth();
+      setUser(userInfo);
+    };
+    fetchUser();
+  }, [isSignInOpen]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,28 +101,14 @@ const Header: React.FC = () => {
           <div>
             <Logo />
           </div>
-          {/* <nav className='hidden lg:flex grow items-center gap-4 xl:gap-6  justify-center'>
-            {headerLink.map((item, index) => (
-              <HeaderLink key={index} item={item} />
-            ))}
-          </nav> */}
           <div className='flex items-center gap-2 lg:gap-3'>
-            {/* <Link
-              href='#'
-              className='text-lg font-medium hover:text-primary hidden xl:block'>
-              <Icon
-                icon='solar:phone-bold'
-                className='text-primary text-3xl lg:text-2xl inline-block me-2'
-              />
-              +1(909) 235-9814
-            </Link> */}
-            <button
+            {!user ? <button
               className='hidden lg:block text-primary duration-300 bg-primary/15 hover:text-white hover:bg-primary font-medium text-lg py-2 px-6 rounded-full hover:cursor-pointer'
               onClick={() => {
                 setIsSignInOpen(true)
               }}>
               Sign In
-            </button>
+            </button> : <>Hey {user.user_metadata.full_name}</>}
             {isSignInOpen && (
               <div className='fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50'>
                 <div
@@ -128,17 +125,26 @@ const Header: React.FC = () => {
                       className='text-black hover:text-primary text-24 inline-block me-2'
                     />
                   </button>
-                  <Signin />
+                  <Signin setIsSignInOpen={setIsSignInOpen} setIsSignUpOpen={setIsSignUpOpen} />
                 </div>
               </div>
             )}
-            <button
+            {!user ? <button
               className='hidden lg:block bg-primary duration-300 text-white hover:bg-primary/15 hover:text-primary font-medium text-lg py-2 px-6 rounded-full hover:cursor-pointer'
               onClick={() => {
                 setIsSignUpOpen(true)
               }}>
               Sign Up
-            </button>
+            </button> : <button
+              className='hidden lg:block bg-primary duration-300 text-white hover:bg-primary/15 hover:text-primary font-medium text-lg py-2 px-6 rounded-full hover:cursor-pointer'
+              onClick={async () => {
+                const { error } = await supabase().auth.signOut()
+                if (!error) {
+                  window.location.href = '/'
+                }
+              }}>
+              Sign Out
+            </button>}
             {isSignUpOpen && (
               <div className='fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50'>
                 <div
@@ -155,7 +161,7 @@ const Header: React.FC = () => {
                       className='text-black hover:text-primary text-24 inline-block me-2'
                     />
                   </button>
-                  <SignUp />
+                  <SignUp setIsSignUpOpen={setIsSignUpOpen} setIsSignInOpen={setIsSignInOpen} />
                 </div>
               </div>
             )}

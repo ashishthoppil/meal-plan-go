@@ -1,14 +1,12 @@
 import React from 'react'
 import Hero from '@/app/components/Home/Hero'
 import Features from '@/app/components/Home/Features'
-import Cook from '@/app/components/Home/Cook'
-import Expert from '@/app/components/Home/Expert'
-import Gallery from '@/app/components/Home/Gallery'
 import Newsletter from '@/app/components/Home/Newsletter'
 import { Metadata } from 'next'
-import ContactForm from './components/Contact/Form'
+import { ToastContainer } from 'react-toastify';
+
 export const metadata: Metadata = {
-  title: 'BitePlan',
+  title: 'MealPlanGo',
 }
 
 export default function Home() {
@@ -17,6 +15,7 @@ export default function Home() {
       <Hero />
       <Features />
       <Newsletter />
+      <ToastContainer />
     </main>
   )
 }

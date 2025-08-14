@@ -2,6 +2,7 @@
 import Image from 'next/image'
 import React from 'react'
 import { useState, useEffect } from 'react'
+import { toast } from 'react-toastify'
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -53,6 +54,14 @@ const ContactForm = () => {
         }),
       headers: { 'Content-Type': 'application/json' },
     });
+
+    if (res.status === 402) {
+      setLoader(false);
+      // ➜ open your pricing modal / route to /pricing
+      // e.g. setShowPaywall(true);
+      toast('Free try ended.')
+      return;
+    }
 
     if (!res.ok) {
       setLoader(false)

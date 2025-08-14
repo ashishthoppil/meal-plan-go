@@ -2,8 +2,44 @@
 import Link from 'next/link'
 import SocialSignUp from '../SocialSignUp'
 import Logo from '@/app/components/Layout/Header/Logo'
+import { useState } from 'react'
+import { supabase } from '@/utils/supabase/client'
+import { toast } from 'react-toastify';
 
-const SignUp = () => {  
+const SignUp = ({ setIsSignUpOpen, setIsSignInOpen }: any) => {  
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function onRegister(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null); setMsg(null); setLoading(true);
+
+    const { error } = await supabase().auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: name },        // store name in user metadata
+        // emailRedirectTo: redirectTo,      // where to land after email confirm (if enabled)
+      },
+    });
+
+    setLoading(false);
+    if (error) {
+      setErr(error.message);
+    }
+    else {
+      setMsg('Check your email to confirm your account.');
+      setIsSignUpOpen(false);
+      toast('Successfully Registered! Login to you account.', {
+        progressClassName: 'bg-orange-500'
+      })
+    }
+  }
 
   return (
     <>
@@ -11,17 +47,19 @@ const SignUp = () => {
         <Logo />
       </div>
 
-      <SocialSignUp />
+      {/* <SocialSignUp /> */}
 
-      <span className="z-1 relative my-8 block text-center before:content-[''] before:absolute before:h-px before:w-[40%] before:bg-black/20 before:bg-opacity-60 before:left-0 before:top-3 after:content-[''] after:absolute after:h-px after:w-[40%] after:bg-black/20 after:bg-opacity-60 after:top-3 after:right-0">
+      {/* <span className="z-1 relative my-8 block text-center before:content-[''] before:absolute before:h-px before:w-[40%] before:bg-black/20 before:bg-opacity-60 before:left-0 before:top-3 after:content-[''] after:absolute after:h-px after:w-[40%] after:bg-black/20 after:bg-opacity-60 after:top-3 after:right-0">
         <span className='text-body-secondary relative z-10 inline-block px-3 text-base text-black'>
           OR
         </span>
-      </span>
+      </span> */}
 
-      <form>
+      <form onSubmit={onRegister}>
         <div className='mb-[22px]'>
           <input
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
             type='text'
             placeholder='Name'
             name='name'
@@ -31,6 +69,8 @@ const SignUp = () => {
         </div>
         <div className='mb-[22px]'>
           <input
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
             type='email'
             placeholder='Email'
             name='email'
@@ -40,6 +80,8 @@ const SignUp = () => {
         </div>
         <div className='mb-[22px]'>
           <input
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
             type='password'
             placeholder='Password'
             name='password'
@@ -49,10 +91,13 @@ const SignUp = () => {
         </div>
         <div className='mb-9'>
           <button
+            disabled={loading}
             type='submit'
             className='flex w-full items-center text-18 font-medium text-white justify-center rounded-md bg-primary px-5 py-3 text-darkmode transition duration-300 ease-in-out hover:bg-transparent hover:text-primary border-primary border'>
-            Sign Up 
+            {loading ? 'Creating Account' : 'Sign Up'} 
           </button>
+          <span className='text-red-500'>{err}</span>
+
         </div>
       </form>
 
@@ -69,7 +114,11 @@ const SignUp = () => {
 
       <p className='text-body-secondary text-black/60 text-base'>
         Already have an account?
-        <Link href='/' className='pl-2 text-primary hover:underline'>
+        <Link onClick={(e) => {
+          e.preventDefault();
+          setIsSignUpOpen(false);
+          setIsSignInOpen(true)
+        }} href='/' className='pl-2 text-primary hover:underline'>
           Sign In
         </Link>
       </p>

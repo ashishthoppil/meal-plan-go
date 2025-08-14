@@ -1,3 +1,4 @@
+import { checkAndConsumeTrial } from '@/utils/trials';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
@@ -123,6 +124,15 @@ async function renderPdf(html: string): Promise<Uint8Array> {
 
 export async function POST(req: Request) {
   const { email, dietPreference, peopleCount, cuisine, additionalNote } = await req.json();
+
+  const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0]?.trim();
+  const ua = req.headers.get('user-agent') || '';
+
+  const trial = await checkAndConsumeTrial({ email, ip, ua });
+
+  if (!trial.allowed) {
+    return NextResponse.json({ error: 'trial_exhausted' }, { status: 402 });
+  }
 
   const prompt = buildPrompt({ peopleCount, dietPreference, cuisine, additionalNote });
 

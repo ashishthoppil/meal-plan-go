@@ -2,8 +2,15 @@
 import Link from 'next/link'
 import SocialSignIn from '../SocialSignIn'
 import Logo from '@/app/components/Layout/Header/Logo'
+import { supabase } from '@/utils/supabase/client'
+import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 
-const Signin = () => {
+const Signin = ({ setIsSignInOpen, setIsSignUpOpen }: any) => {
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [err, setErr] = useState('')
   
   return (
     <>
@@ -11,17 +18,28 @@ const Signin = () => {
         <Logo />
       </div>
 
-      <SocialSignIn />
+      {/* <SocialSignIn /> */}
 
-      <span className='z-1 relative my-8 block text-center  before:absolute before:h-px before:w-[40%] before:bg-black/20 before:left-0 before:top-3  after:absolute after:h-px after:w-[40%] after:bg-black/20 after:top-3 after:right-0'>
+      {/* <span className='z-1 relative my-8 block text-center  before:absolute before:h-px before:w-[40%] before:bg-black/20 before:left-0 before:top-3  after:absolute after:h-px after:w-[40%] after:bg-black/20 after:top-3 after:right-0'>
         <span className='text-body-secondary relative z-10 inline-block px-3 text-base text-black'>
           OR
         </span>
-      </span>
+      </span> */}
 
-      <form onSubmit={(e) => e.preventDefault()}>
+      <form onSubmit={async (e) => {
+        e.preventDefault();
+        const { error } = await supabase().auth.signInWithPassword({ email, password })
+        if (error) {
+          setErr(error.message)
+        } else {
+          toast(`Signed In Successfully!`)
+          setIsSignInOpen(false);
+        }
+      }}>
         <div className='mb-[22px]'>
           <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             type='email'
             placeholder='Email'
             
@@ -30,6 +48,8 @@ const Signin = () => {
         </div>
         <div className='mb-[22px]'>
           <input
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             type='password'
             placeholder='Password'
             
@@ -43,6 +63,7 @@ const Signin = () => {
             className='bg-primary w-full py-3 rounded-lg text-18 font-medium border text-white border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'>
             Sign In 
           </button>
+          <span className='text-red-500'>{err}</span>
         </div>
       </form>
 
@@ -53,7 +74,11 @@ const Signin = () => {
       </Link>
       <p className='text-black text-base'>
         Not a member yet?{' '}
-        <Link href='/' className='text-primary hover:underline'>
+        <Link onClick={(e) => {
+          e.preventDefault();
+          setIsSignUpOpen(true);
+          setIsSignInOpen(false)
+        }} href='/' className='text-primary hover:underline'>
           Sign Up
         </Link>
       </p>
