@@ -10,7 +10,7 @@ const admin = createClient(
 const sha = (s: string) => crypto.createHash('sha256').update(s || '').digest('hex');
 
 export async function checkAndConsumeTrial(opts: { email: string; ip?: string; ua?: string }) {
-    return { allowed: false }
+    // return { allowed: false }
   const email = (opts.email || '').trim().toLowerCase();
   if (!email) throw new Error('email required');
 
