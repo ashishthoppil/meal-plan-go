@@ -204,7 +204,7 @@ const Header: React.FC = () => {
             {/* {headerLink.map((item, index) => (
               <MobileHeaderLink key={index} item={item} />
             ))} */}
-            <span className='text-center'>Hey {user.user_metadata.full_name}</span>
+            {user ? <span className='text-center'>Hey {user.user_metadata.full_name}</span> : <></>}
             <div className='mt-4 flex flex-col space-y-4 w-full'>
               <button
                 className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
