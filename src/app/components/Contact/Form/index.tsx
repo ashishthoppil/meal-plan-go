@@ -5,8 +5,9 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import Signin from '../../Auth/SignIn'
 import { Icon } from '@iconify/react/dist/iconify.js'
-import { checkAuth } from '@/utils/supabase/client'
+import { checkAuth, supabase } from '@/utils/supabase/client'
 import SignUp from '../../Auth/SignUp'
+import Link from 'next/link'
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -24,6 +25,7 @@ const ContactForm = () => {
   const [isSignInOpen, setIsSignInOpen] = useState(false)
   const [isSignUpOpen, setIsSignUpOpen] = useState(false)
   const [user, setUser] = useState<any>();
+  const [isPlanOpen, setIsPlanOpen] = useState<any>(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -59,6 +61,9 @@ const ContactForm = () => {
     e.preventDefault()
     setLoader(true)
 
+    const { data: { user } } = await supabase().auth.getUser();
+    
+
     const res = await fetch('/api/generate-plan', {
       method: 'POST',
       body: JSON.stringify({
@@ -67,15 +72,21 @@ const ContactForm = () => {
           people: formData.people,
           cuisine: formData.cuisine,
           note: formData.note,
+          user
         }),
       headers: { 'Content-Type': 'application/json' },
     });
 
     if (res.status === 402) {
-      setLoader(false);
-      // ➜ open your pricing modal / route to /pricing
-      // e.g. setShowPaywall(true);
-      setTrialEnded(true);
+      const data = await res.json()
+      if(data.error === 'choose_plan') {
+        setIsPlanOpen(true);
+        return;
+      } else if (data.error === 'limit_reached') {
+        toast('You have used up all your credits!')
+        setIsPlanOpen(true);
+        return;
+      }
       setIsSignInOpen(true);
       return;
     }
@@ -273,6 +284,40 @@ const ContactForm = () => {
                     />
                   </button>
                   <SignUp setIsSignUpOpen={setIsSignUpOpen} setIsSignInOpen={setIsSignInOpen} />
+                </div>
+              </div>
+            )}
+            {isPlanOpen && (
+              <div className='fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50'>
+                <div
+                  className='relative mx-auto w-full max-w-md overflow-hidden rounded-lg bg-dark_grey/90 bg-white backdrop-blur-md px-8 pt-14 pb-8 text-center'>
+                  <button
+                    onClick={() => setIsPlanOpen(false)}
+                    className='absolute top-0 right-0 mr-4 mt-8 hover:cursor-pointer'
+                    aria-label='Close Sign Up Modal'>
+                    <Icon
+                      icon='material-symbols:close-rounded'
+                      width={24}
+                      height={24}
+                      className='text-black hover:text-primary text-24 inline-block me-2'
+                    />
+                  </button>
+                  <div className='flex flex-col gap-2'>
+                    <span>Buy 10 credits for just $3.99</span>
+                    <span>(10 credits = 10 Downloadable meal plans and grocery list)</span>
+                    <a className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out lemonsqueezy-button' href="https://kulfi.lemonsqueezy.com/buy/16d53874-c04f-47bf-8a7b-0eaf88691ef0?embed=1">Buy 10 Credits</a><script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
+                    {/* <Link
+                      className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
+                    onClick={() => {
+                      setIsPlanOpen(false)
+                    }}
+                    href='https://kulfi.lemonsqueezy.com/buy/16d53874-c04f-47bf-8a7b-0eaf88691ef0'
+                    target='_blank'>
+                      Purchase 10 Credits
+                    </Link> */}
+                  </div>
+                  
+                  {/* <SignUp setIsSignUpOpen={setIsSignUpOpen} setIsSignInOpen={setIsSignInOpen} /> */}
                 </div>
               </div>
             )}

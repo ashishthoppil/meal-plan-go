@@ -11,6 +11,11 @@ export const runtime = 'nodejs';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+const admin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { persistSession: false } }
+);
 // ---------- Types
 export type Meal = {
   dish: string;
@@ -120,9 +125,8 @@ function planToHTML(plan: PlanResponse, opts: { title?: string; people?: number 
 async function renderPdf(html: string): Promise<Uint8Array> {
   const puppeteer = await import('puppeteer-core');
 
-  // In dev you might have a local Chrome; on Vercel use bundled Chromium
   const executablePath =
-    process.env.CHROME_EXECUTABLE_PATH /* optional for local docker */ ||
+    process.env.CHROME_EXECUTABLE_PATH ||
     (await Chromium.executablePath());
 
   const browser: Browser = await puppeteer.launch({
@@ -144,7 +148,7 @@ async function renderPdf(html: string): Promise<Uint8Array> {
 }
 
 export async function POST(req: Request) {
-  const { email, dietPreference, peopleCount, cuisine, additionalNote } = await req.json();
+  const { email, dietPreference, peopleCount, cuisine, additionalNote, user } = await req.json();
 
   const ip =
   req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -152,20 +156,39 @@ export async function POST(req: Request) {
   ''
   const ua = req.headers.get('user-agent') || '';
 
-  const trial = await checkAndConsumeTrial({ email, ip, ua });
-  const { data: { user } } = await supabase().auth.getUser();
-  
-
+  const trial = await checkAndConsumeTrial({ email, ip, ua });  
+  let tries = 0;
+// User is not signed in and has used up his/her trial
   if (!trial.allowed && !user) {
     return NextResponse.json({ error: 'trial_exhausted' }, { status: 402 });
   }
-
   if (user) {
-    const admin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,            // server-only
-      { auth: { persistSession: false } }
-    );
+    // check the plan user has selected
+  const { data: profile, error: profErr } = await admin
+    .from('profiles')
+    .select('plan, tries, subscribed_on')
+    .eq('email', email.toLowerCase())
+    .maybeSingle();
+
+    if (profErr) {
+      return NextResponse.json({ error: 'profile_lookup_failed' }, { status: 500 });
+    }
+    if (!profile) {
+      return NextResponse.json({ error: 'choose_plan' }, { status: 402 });
+    }
+    if (profile.plan === 'free') {
+      return NextResponse.json({ error: 'choose_plan' }, { status: 402 });
+    }
+    if (profile.plan === 'paid') {
+      // Check if tries is already at the limit
+      tries = profile.tries;
+      if ((profile.tries ?? 0) >= 10) {
+        return NextResponse.json(
+          { error: 'limit_reached', message: 'Buy more credits or wait for reset' },
+          { status: 402 }
+        );
+      }
+    }
   }
 
   const prompt = buildPrompt({ peopleCount, dietPreference, cuisine, additionalNote });
@@ -181,6 +204,13 @@ export async function POST(req: Request) {
 
   const html = planToHTML(plan, { title: '7‑Day Meal Plan', people: Number(peopleCount) || 1 });
   const pdf = await renderPdf(html);
+  if (user) {
+    const { error: incErr } = await admin
+      .from('profiles')
+      .update({ tries: (tries ?? 0) + 1 })
+      .eq('email', email.toLowerCase());
+  }
+
   return new NextResponse(pdf as any, {
     headers: {
       'Content-Type': 'application/pdf',
