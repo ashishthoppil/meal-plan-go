@@ -17,8 +17,8 @@ export async function checkAndConsumeTrial(opts: { email: string; ip?: string; u
   // 1) already used?
   const { data } = await admin.from('trial_uses')
     .select('id')
-    .eq('ip', opts.ip)
-    .eq('ua', opts.ua)
+    .eq('ip', sha(opts.ip || ''))
+    .eq('ua', sha(opts.ua || ''))
   if (data) return { allowed: false };
 
   // 2) consume (insert row)
