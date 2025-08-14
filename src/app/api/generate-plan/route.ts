@@ -1,12 +1,12 @@
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 import { checkAndConsumeTrial } from '@/utils/trials';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import Chromium from '@sparticuz/chromium';
 import type { Browser } from 'puppeteer-core';
 import { createClient } from '@supabase/supabase-js';
-
-// export const runtime = 'nodejs'; // <-- uncomment if deploying where Edge isn't compatible with Puppeteer
-export const runtime = 'nodejs';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -218,7 +218,7 @@ function planToHTML(
 
 
 
-async function renderPdf(html: string): Promise<Uint8Array> {
+async function renderPdf(html: string): Promise<any> {
   const puppeteer = await import('puppeteer-core');
 
   const executablePath =

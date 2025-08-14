@@ -108,7 +108,7 @@ const Header: React.FC = () => {
                 setIsSignInOpen(true)
               }}>
               Sign In
-            </button> : <>Hey {user.user_metadata.full_name}</>}
+            </button> : <span className='hidden lg:block'>Hey {user.user_metadata.full_name}</span>}
             {isSignInOpen && (
               <div className='fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50'>
                 <div
@@ -200,19 +200,11 @@ const Header: React.FC = () => {
               />
             </button>
           </div>
-          <Link
-            href='#'
-            className='text-lg font-medium hover:text-primary block md:hidden mt-6 p-4'>
-            <Icon
-              icon='solar:phone-bold'
-              className='text-primary text-3xl lg:text-2xl inline-block me-2'
-            />
-            +1(909) 235-9814
-          </Link>
           <nav className='flex flex-col items-start p-4'>
-            {headerLink.map((item, index) => (
+            {/* {headerLink.map((item, index) => (
               <MobileHeaderLink key={index} item={item} />
-            ))}
+            ))} */}
+            <span className='text-center'>Hey {user.user_metadata.full_name}</span>
             <div className='mt-4 flex flex-col space-y-4 w-full'>
               <button
                 className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
