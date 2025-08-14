@@ -229,7 +229,7 @@ async function renderPdf(html: string): Promise<any> {
     args: Chromium.args,
     defaultViewport: Chromium.defaultViewport,
     executablePath,
-    headless: Chromium.headless, // true on Vercel
+    headless: true, // true on Vercel
   });
 
   const page = await browser.newPage();
