@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import Signin from '../../Auth/SignIn'
 import { Icon } from '@iconify/react/dist/iconify.js'
 import { checkAuth } from '@/utils/supabase/client'
+import SignUp from '../../Auth/SignUp'
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -253,6 +254,25 @@ const ContactForm = () => {
                     />
                   </button>
                   <Signin setIsSignInOpen={setIsSignInOpen} setIsSignUpOpen={setIsSignUpOpen} />
+                </div>
+              </div>
+            )}
+            {isSignUpOpen && (
+              <div className='fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50'>
+                <div
+                  className='relative mx-auto w-full max-w-md overflow-hidden rounded-lg bg-dark_grey/90 bg-white backdrop-blur-md px-8 pt-14 pb-8 text-center'>
+                  <button
+                    onClick={() => setIsSignUpOpen(false)}
+                    className='absolute top-0 right-0 mr-4 mt-8 hover:cursor-pointer'
+                    aria-label='Close Sign Up Modal'>
+                    <Icon
+                      icon='material-symbols:close-rounded'
+                      width={24}
+                      height={24}
+                      className='text-black hover:text-primary text-24 inline-block me-2'
+                    />
+                  </button>
+                  <SignUp setIsSignUpOpen={setIsSignUpOpen} setIsSignInOpen={setIsSignInOpen} />
                 </div>
               </div>
             )}

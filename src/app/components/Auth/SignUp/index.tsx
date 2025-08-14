@@ -23,8 +23,7 @@ const SignUp = ({ setIsSignUpOpen, setIsSignInOpen }: any) => {
       email,
       password,
       options: {
-        data: { full_name: name },        // store name in user metadata
-        // emailRedirectTo: redirectTo,      // where to land after email confirm (if enabled)
+        data: { full_name: name, email },
       },
     });
 

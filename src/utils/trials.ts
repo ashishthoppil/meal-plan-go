@@ -16,16 +16,16 @@ export async function checkAndConsumeTrial(opts: { email: string; ip?: string; u
 
   // 1) already used?
   const { data } = await admin.from('trial_uses')
-    .select('id')
-    .eq('ip', sha(opts.ip || ''))
-    .eq('ua', sha(opts.ua || ''))
+    .select('email')
+    .eq('ip', opts.ip)
+    .eq('ua', opts.ua)
   if (data) return { allowed: false };
 
   // 2) consume (insert row)
   await admin.from('trial_uses').insert({
     email,
-    ip_hash: sha(opts.ip || ''),
-    ua_hash: sha(opts.ua || ''),
+    ip_hash: opts.ip,
+    ua_hash: opts.ua,
   });
 
   return { allowed: true };

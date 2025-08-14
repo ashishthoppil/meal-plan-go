@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import Chromium from '@sparticuz/chromium';
 import type { Browser } from 'puppeteer-core';
+import { supabase } from '@/utils/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 
 // export const runtime = 'nodejs'; // <-- uncomment if deploying where Edge isn't compatible with Puppeteer
 export const runtime = 'nodejs';
@@ -144,13 +146,26 @@ async function renderPdf(html: string): Promise<Uint8Array> {
 export async function POST(req: Request) {
   const { email, dietPreference, peopleCount, cuisine, additionalNote } = await req.json();
 
-  const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0]?.trim();
+  const ip =
+  req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+  req.headers.get('x-real-ip') ||
+  ''
   const ua = req.headers.get('user-agent') || '';
 
   const trial = await checkAndConsumeTrial({ email, ip, ua });
+  const { data: { user } } = await supabase().auth.getUser();
+  
 
-  if (!trial.allowed) {
+  if (!trial.allowed && !user) {
     return NextResponse.json({ error: 'trial_exhausted' }, { status: 402 });
+  }
+
+  if (user) {
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,            // server-only
+      { auth: { persistSession: false } }
+    );
   }
 
   const prompt = buildPrompt({ peopleCount, dietPreference, cuisine, additionalNote });
