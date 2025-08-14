@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary: #df6853;
+  --color-grey: #363636;
+
+  --spacing-60\%: 60%;
+  --spacing-70\%: 70%;
+
+  --tracking-widest: 0.515em;
+
+  --radius-Newsletter: 30px 400px 30px 30px;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  section {
+    @apply py-10;
+  }
+
+  h1 {
+    @apply text-black md:text-7xl sm:text-6xl text-5xl
+  }
+
+  h2 {
+    @apply text-black font-semibold sm:text-5xl text-4xl sm:leading-14 leading-11
+  }
+  
+}
+
+@layer utilities {
+  .container {
+    @apply max-w-7xl mx-auto w-full px-4;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}

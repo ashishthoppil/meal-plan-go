@@ -1,0 +1,10 @@
+{
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/api/data/route": "app/api/data/route.js",
+  "/api/generate-plan/route": "app/api/generate-plan/route.js",
+  "/(site)/(auth)/signin/page": "app/(site)/(auth)/signin/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js",
+  "/(site)/documentation/page": "app/(site)/documentation/page.js",
+  "/(site)/(auth)/signup/page": "app/(site)/(auth)/signup/page.js"
+}
