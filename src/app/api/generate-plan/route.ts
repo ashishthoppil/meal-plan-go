@@ -1,8 +1,11 @@
 import { checkAndConsumeTrial } from '@/utils/trials';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import Chromium from '@sparticuz/chromium';
+import type { Browser } from 'puppeteer-core';
 
 // export const runtime = 'nodejs'; // <-- uncomment if deploying where Edge isn't compatible with Puppeteer
+export const runtime = 'nodejs';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -113,13 +116,29 @@ function planToHTML(plan: PlanResponse, opts: { title?: string; people?: number 
 }
 
 async function renderPdf(html: string): Promise<Uint8Array> {
-    const puppeteer = await import('puppeteer');
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    const pdf = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '20mm', right: '15mm', bottom: '20mm', left: '15mm' } });
-    await browser.close();
-    return pdf;
+  const puppeteer = await import('puppeteer-core');
+
+  // In dev you might have a local Chrome; on Vercel use bundled Chromium
+  const executablePath =
+    process.env.CHROME_EXECUTABLE_PATH /* optional for local docker */ ||
+    (await Chromium.executablePath());
+
+  const browser: Browser = await puppeteer.launch({
+    args: Chromium.args,
+    defaultViewport: Chromium.defaultViewport,
+    executablePath,
+    headless: Chromium.headless, // true on Vercel
+  });
+
+  const page = await browser.newPage();
+  await page.setContent(html, { waitUntil: 'networkidle0' });
+  const pdf = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    margin: { top: '20mm', right: '15mm', bottom: '20mm', left: '15mm' },
+  });
+  await browser.close();
+  return pdf;
 }
 
 export async function POST(req: Request) {
