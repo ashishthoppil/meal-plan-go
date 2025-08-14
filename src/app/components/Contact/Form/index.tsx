@@ -3,6 +3,9 @@ import Image from 'next/image'
 import React from 'react'
 import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
+import Signin from '../../Auth/SignIn'
+import { Icon } from '@iconify/react/dist/iconify.js'
+import { checkAuth } from '@/utils/supabase/client'
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +19,18 @@ const ContactForm = () => {
   const [showThanks, setShowThanks] = useState(false)
   const [loader, setLoader] = useState(false)
   const [isFormValid, setIsFormValid] = useState(false)
+  const [trialEnded, setTrialEnded] = useState(false)
+  const [isSignInOpen, setIsSignInOpen] = useState(false)
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false)
+  const [user, setUser] = useState<any>();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userInfo = await checkAuth();
+      setUser(userInfo);
+    };
+    fetchUser();
+  }, [isSignInOpen]);
 
   useEffect(() => {
     if (formData.email !== '' && formData.diet !== '') {
@@ -59,7 +74,8 @@ const ContactForm = () => {
       setLoader(false);
       // ➜ open your pricing modal / route to /pricing
       // e.g. setShowPaywall(true);
-      toast('Free try ended.')
+      setTrialEnded(true);
+      setIsSignInOpen(true);
       return;
     }
 
@@ -219,6 +235,27 @@ const ContactForm = () => {
           </p>
         </div>
       </div>
+
+
+      {isSignInOpen && (
+              <div className='fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50'>
+                <div
+                  className='relative mx-auto w-full max-w-md overflow-hidden rounded-lg px-8 pt-14 pb-8 text-center bg-white'>
+                  <button
+                    onClick={() => setIsSignInOpen(false)}
+                    className='absolute top-0 right-0 mr-4 mt-8 hover:cursor-pointer'
+                    aria-label='Close Sign In Modal'>
+                    <Icon
+                      icon='material-symbols:close-rounded'
+                      width={24}
+                      height={24}
+                      className='text-black hover:text-primary text-24 inline-block me-2'
+                    />
+                  </button>
+                  <Signin setIsSignInOpen={setIsSignInOpen} setIsSignUpOpen={setIsSignUpOpen} />
+                </div>
+              </div>
+            )}
     </section>
   )
 }

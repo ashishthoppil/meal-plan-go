@@ -10,11 +10,15 @@ const admin = createClient(
 const sha = (s: string) => crypto.createHash('sha256').update(s || '').digest('hex');
 
 export async function checkAndConsumeTrial(opts: { email: string; ip?: string; ua?: string }) {
+    return { allowed: false }
   const email = (opts.email || '').trim().toLowerCase();
   if (!email) throw new Error('email required');
 
   // 1) already used?
-  const { data } = await admin.from('trial_uses').select('email').eq('email', email).maybeSingle();
+  const { data } = await admin.from('trial_uses')
+    .select('id')
+    .eq('ip', opts.ip)
+    .eq('ua', opts.ua)
   if (data) return { allowed: false };
 
   // 2) consume (insert row)
