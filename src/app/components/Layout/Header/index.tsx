@@ -206,22 +206,35 @@ const Header: React.FC = () => {
             ))} */}
             {user ? <span className='text-center'>Hey {user.user_metadata.full_name}</span> : <></>}
             <div className='mt-4 flex flex-col space-y-4 w-full'>
+              {user ? 
               <button
-                className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
-                onClick={() => {
-                  setIsSignInOpen(true)
-                  setNavbarOpen(false)
-                }}>
-                Sign In
-              </button>
-              <button
-                className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
-                onClick={() => {
-                  setIsSignUpOpen(true)
-                  setNavbarOpen(false)
-                }}>
-                Sign Up
-              </button>
+                  className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
+                  onClick={async () => {
+                    const { error } = await supabase().auth.signOut()
+                    if (!error) {
+                      window.location.href = '/'
+                    }
+                  }}>
+                  Sign Out
+                </button>
+                : <>
+                <button
+                  className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
+                  onClick={() => {
+                    setIsSignInOpen(true)
+                    setNavbarOpen(false)
+                  }}>
+                  Sign In
+                </button>
+                <button
+                  className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
+                  onClick={() => {
+                    setIsSignUpOpen(true)
+                    setNavbarOpen(false)
+                  }}>
+                  Sign Up
+                </button>
+              </>}
             </div>
           </nav>
         </div>

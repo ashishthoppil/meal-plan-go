@@ -106,7 +106,7 @@ const ContactForm = () => {
 
       // Cleanup the URL object
       window.URL.revokeObjectURL(url);
-      toast('Meal PLan Created!')
+      toast('Meal Plan Created!')
       setLoader(false)
       reset()
     } 
