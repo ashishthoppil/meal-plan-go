@@ -2,7 +2,6 @@ export const maxDuration = 300;
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-import { checkAndConsumeTrial } from '@/utils/trials';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
@@ -124,7 +123,7 @@ async function renderPdf(plan: PlanResponse, previewOnly: boolean): Promise<Uint
   });
 
   // Grocery List
-  drawText('Consolidated Grocery List', 14, true);
+  drawText('Grocery List', 14, true);
   const items = previewOnly ? plan.groceryList.slice(0, 8) : plan.groceryList;
   items.forEach((g) => drawText(`• ${g.ingredient} — ${g.quantity}`, 12));
   if (previewOnly && plan.groceryList.length > 8) {
@@ -155,14 +154,8 @@ async function renderPdf(plan: PlanResponse, previewOnly: boolean): Promise<Uint
 }
 
 export async function POST(req: Request) {
-  const { email, dietPreference, peopleCount, cuisine, additionalNote, user } = await req.json();
-  const forwardedFor = req.headers.get('x-forwarded-for') || '';
-  // If there are multiple IPs, the first one is the client
-  const ip = forwardedFor.split(',')[0]?.trim() || 'unknown';
-  console.log('ipipipip', ip);
-  const ua = req.headers.get('user-agent') || '';
-
-  const trial = await checkAndConsumeTrial({ email, ip, ua });  
+  const { email, dietPreference, peopleCount, cuisine, additionalNote, user, trial } = await req.json();
+console.log('trialtrial', trial)
   let tries = 0;
 // User is not signed in and has used up his/her trial
   if (!trial.allowed && !user) {
@@ -211,7 +204,7 @@ export async function POST(req: Request) {
   // const html = planToHTML(plan, { title: '7‑Day Meal Plan', people: Number(peopleCount) || 1 }, trial.allowed);
   const pdf = await renderPdf(plan, trial.allowed);
   if (user) {
-    const { error: incErr } = await admin
+    admin
       .from('profiles')
       .update({ tries: (tries ?? 0) + 1 })
       .eq('email', email.toLowerCase());

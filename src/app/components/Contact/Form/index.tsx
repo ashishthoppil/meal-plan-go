@@ -24,11 +24,20 @@ const ContactForm = () => {
   const [isSignUpOpen, setIsSignUpOpen] = useState(false)
   const [user, setUser] = useState<any>();
   const [isPlanOpen, setIsPlanOpen] = useState<any>(false);
+  const [trial, setTrial] = useState<any>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       const userInfo = await checkAuth();
       setUser(userInfo);
+
+      const res = await fetch('/api/check-trial', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await res.json();
+      setTrial(data.trial);
     };
     fetchUser();
   }, [isSignInOpen]);
@@ -70,7 +79,8 @@ const ContactForm = () => {
           people: formData.people,
           cuisine: formData.cuisine,
           note: formData.note,
-          user
+          user,
+          trial
         }),
       headers: { 'Content-Type': 'application/json' },
     });
