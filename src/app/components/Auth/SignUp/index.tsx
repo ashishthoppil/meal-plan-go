@@ -30,11 +30,11 @@ const SignUp = ({ setIsSignUpOpen, setIsSignInOpen }: any) => {
     setLoading(false);
     if (error) {
       setErr(error.message);
-    }
-    else {
-      setMsg('Check your email to confirm your account.');
+    } else {
       setIsSignUpOpen(false);
-      toast('Successfully Registered! Login to you account.', {
+      const signIn = await supabase().auth.signInWithPassword({ email, password })
+
+      toast('Successfully Registered!', {
         progressClassName: 'bg-orange-500'
       })
     }

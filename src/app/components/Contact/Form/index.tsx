@@ -31,7 +31,7 @@ const ContactForm = () => {
       setUser(userInfo);
     };
     fetchUser();
-  }, [isSignInOpen]);
+  }, [isSignInOpen, isSignUpOpen]);
 
   useEffect(() => {
     if (formData.email !== '' && formData.diet !== '') {
@@ -84,6 +84,10 @@ const ContactForm = () => {
       } else if (data.error === 'limit_reached') {
         toast('You have used up all your credits!')
         setLoader(false)
+        return;
+      } else if (data.error === 'trial_exhausted') {
+        setLoader(false)
+        setIsSignInOpen(true);
         return;
       }
       setIsSignInOpen(true);
@@ -226,7 +230,7 @@ const ContactForm = () => {
           </form> :
           <div className='flex flex-col gap-10 items-center justify-center'>
             <Image alt='Preparing Meal Plans' src={'/images/preparing.gif'} width={150} height={150} />
-            <span className='text-center'>Carefuly curating your meal plan. This might take a minute. <br/>We thank you for your patience! ❤️</span>
+            <span className='text-center'>Carefully curating your meal plan. This might take a minute. <br/>We thank you for your patience! ❤️</span>
           </div>
           }
         </div>

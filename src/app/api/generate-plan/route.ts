@@ -158,11 +158,10 @@ export async function POST(req: Request) {
   const { email, dietPreference, peopleCount, cuisine, additionalNote, user } = await req.json();
   let tries = 0;
   const forwardedFor = req.headers.get('x-forwarded-for') || '';
-      // If there are multiple IPs, the first one is the client
-      const ip = forwardedFor.split(',')[0]?.trim() || 'unknown';
-      const ua = req.headers.get('user-agent') || '';
-    
-      const trial = await checkAndConsumeTrial({ ip, ua });
+  // If there are multiple IPs, the first one is the client
+  const ip = forwardedFor.split(',')[0]?.trim() || 'unknown';
+  const ua = req.headers.get('user-agent') || '';
+  const trial = await checkAndConsumeTrial({ ip, ua });
 // User is not signed in and has used up his/her trial
   if (!trial.allowed && !user) {
     return NextResponse.json({ error: 'trial_exhausted' }, { status: 402 });
