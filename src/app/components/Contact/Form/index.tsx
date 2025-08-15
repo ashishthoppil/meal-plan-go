@@ -125,10 +125,10 @@ const ContactForm = () => {
   return (
     <section id='reserve' className='scroll-mt-20'>
       <div className='container'>
-        <div className='relative border px-6 py-6 rounded-xl shadow-sm'>
-          <form
+        <div className='flex items-center justify-center relative border px-6 py-6 rounded-xl shadow-sm min-w-[35rem] min-h-[35rem] h-[35rem]'>
+          {!loader ? <form
             onSubmit={handleSubmit}
-            className='flex flex-wrap w-full m-auto justify-between'>
+            className='flex flex-wrap w-full m-auto justify-between '>
             <h2 className='text-primary text-[20px] mb-4 font-semibold tracking-tight '>
               Tell us your preferences, we’ll handle the rest.
             </h2>
@@ -231,13 +231,12 @@ const ContactForm = () => {
                 {loader ? 'Creating Your Plan...' : 'Get Your Plan'}
               </button>
             </div>
-          </form>
-          {showThanks && (
-            <div className='text-white bg-primary rounded-full px-4 text-lg mb-4.5 mt-3 absolute flex items-center gap-2'>
-              Thanks! Your table is booked. See you soon.
-              <div className='w-3 h-3 rounded-full animate-spin border-2 border-solid border-white border-t-transparent'></div>
-            </div>
-          )}
+          </form> :
+          <div className='flex flex-col gap-10 items-center justify-center'>
+            <Image alt='Preparing Meal Plans' src={'/images/preparing.gif'} width={150} height={150} />
+            <span className='text-center'>Carefuly curating your meal plan. This might take a minute. <br/>We thank you for your patience! ❤️</span>
+          </div>
+          }
         </div>
         <div className='shadow-xl flex bg-white p-2 pr-3 gap-5 items-center bottom-0 right-0 z-[1] rounded-xl relative mt-10 md:mt-0 md:absolute'>
           <Image

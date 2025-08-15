@@ -38,10 +38,10 @@ function stripCodeFence(input: string) {
 }
 
 function safeParsePlan(content: string): PlanResponse {
-  const raw = stripCodeFence(content).trim();
+  // const raw = stripCodeFence(content).trim();
   try {
-    const parsed = JSON.parse(raw);
-
+    const parsed = JSON.parse(content);
+    console.log('parsedparsed', content)
     if (!parsed || !Array.isArray(parsed.meals) || !Array.isArray(parsed.groceryList)) {
       throw new Error('Malformed JSON structure.');
     }
@@ -194,8 +194,12 @@ console.log('trialtrial', trial)
 
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.2,
+    response_format: { type: 'json_object' },
+    messages: [
+    { role: 'system', content: 'Output a single valid JSON object only.' },
+    { role: 'user', content: prompt }
+  ],
+    temperature: 0.6,
   });
 
   const responseContent = completion.choices[0]?.message?.content ?? '';
