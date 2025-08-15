@@ -321,10 +321,12 @@ async function renderPdf(plan: PlanResponse, previewOnly: boolean): Promise<Uint
 export async function POST(req: Request) {
   const { email, dietPreference, peopleCount, cuisine, additionalNote, user } = await req.json();
 
-  const ip =
-  req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-  req.headers.get('x-real-ip') ||
-  ''
+  const ipResponse = await fetch('https://ipwho.is/', {
+    method: 'GET',
+  });
+
+  const ipData = await ipResponse.json();
+  const ip = ipData.ip;
   const ua = req.headers.get('user-agent') || '';
 
   const trial = await checkAndConsumeTrial({ email, ip, ua });  
