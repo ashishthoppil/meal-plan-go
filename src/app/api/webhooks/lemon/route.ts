@@ -15,12 +15,9 @@ function verifySignature(rawBody: string, signature: string | null, secret: stri
 }
 
 function pickEmail(payload: any): string | null {
-  const a = payload?.data?.attributes || {};
+  const a = payload?.meta.custom_data.user_id || null;
   return (
-    a.user_email ||
-    a.customer_email ||
-    a.email ||
-    null
+    a || null
   );
 }
 
@@ -45,21 +42,17 @@ export async function POST(req: Request) {
 
     // Handle purchase/subscription events that should mark user as paid
     const activates = new Set([
-      'order_created',
-      'subscription_created',
       'subscription_payment_success',
-      'subscription_resumed',
-      'subscription_updated',
     ]);
 
     if (!event || !activates.has(event)) {
       return NextResponse.json({ received: true, ignored: event ?? 'unknown' });
     }
 
-    const email = pickEmail(body);
-    if (!email) {
-      console.error('No email in webhook payload:', body);
-      return NextResponse.json({ error: 'email_not_found' }, { status: 400 });
+    const id = pickEmail(body);
+    if (!id) {
+      console.error('No user_id in webhook payload:', body);
+      return NextResponse.json({ error: 'user_not_found' }, { status: 400 });
     }
 
     // Update profile: plan -> paid, reset tries, set subscribed_on
@@ -70,7 +63,7 @@ export async function POST(req: Request) {
         tries: 0,
         subscribed_on: new Date().toISOString(),
       })
-      .eq('email', email.toLowerCase());
+      .eq('id', id);
 
     if (error) {
       console.error('Supabase update error:', error);

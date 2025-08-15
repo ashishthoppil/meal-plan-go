@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic';
 import { checkAndConsumeTrial } from '@/utils/trials';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import puppeteer from 'puppeteer-core'
+import chromium from '@sparticuz/chromium-min'
 // import Chromium from '@sparticuz/chromium';
 // import type { Browser } from 'puppeteer-core';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
@@ -56,6 +58,18 @@ function safeParsePlan(content: string): PlanResponse {
 
 function buildPrompt({ peopleCount, dietPreference, cuisine, additionalNote }: any) {
   return `You are a professional meal planner.\nCreate a 7-day meal plan for ${peopleCount} people.\nDiet preference: ${dietPreference}.\nPreferred cuisines: ${cuisine}.\nAdditional note: ${additionalNote || 'None'}.\nNumber of meals a day: 3.\n\nSTRICTLY return valid JSON matching this shape (no prose, no explanations, no markdown fences):\n{\n  "meals": [\n    {\n      "breakfast": {\n        "dish": "Oatmeal",\n        "cookingDuration": "5 minutes",\n        "ingredients": ["..."],\n        "recipe": ["Step 1", "Step 2"]\n      },\n      "lunch": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] },\n      "dinner": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] }\n    }\n  ],\n  "groceryList": [ { "ingredient": "Chicken", "quantity": "500 g" } ]\n}\n\nRules:\n- meals array MUST have exactly 7 entries (Mon..Sun).\n- Keep meals simple and healthy for busy people.\n- Use METRIC units for quantities in groceryList (g, ml, etc.).\n- Avoid brand names.`;
+}
+
+async function getBrowser() {
+  return puppeteer.launch({
+    args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath(
+      `https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar`
+    ),
+    headless: chromium.headless,
+    // ignoreHTTPSErrors: true
+  });
 }
 
 // function planToHTML(plan: PlanResponse, opts: { title?: string; people?: number } = {}, trialAllowed: boolean) {
@@ -220,102 +234,116 @@ function planToHTML(
 
 
 
-async function renderPdf(plan: PlanResponse, previewOnly: boolean): Promise<Uint8Array> {
-  const pdf = await PDFDocument.create();
-  const pageMargin = 50;
-  const pageWidth = 595.28;  // A4 width pt
-  const pageHeight = 841.89; // A4 height pt
-  const lineGap = 4;
+// async function renderPdf(plan: PlanResponse, previewOnly: boolean): Promise<Uint8Array> {
+//   const pdf = await PDFDocument.create();
+//   const pageMargin = 50;
+//   const pageWidth = 595.28;  // A4 width pt
+//   const pageHeight = 841.89; // A4 height pt
+//   const lineGap = 4;
 
-  const font = await pdf.embedFont(StandardFonts.Helvetica);
-  const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
+//   const font = await pdf.embedFont(StandardFonts.Helvetica);
+//   const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const addPage = () => pdf.addPage([pageWidth, pageHeight]);
-  let page = addPage();
-  let y = pageHeight - pageMargin;
+//   const addPage = () => pdf.addPage([pageWidth, pageHeight]);
+//   let page = addPage();
+//   let y = pageHeight - pageMargin;
 
-  const drawText = (text: string, size = 12, bold = false) => {
-    const usedFont = bold ? fontBold : font;
-    const lines = wrap(text, usedFont, size, pageWidth - pageMargin * 2);
-    lines.forEach((line) => {
-      if (y < pageMargin + size) { page = addPage(); y = pageHeight - pageMargin; }
-      page.drawText(line, { x: pageMargin, y, size, font: usedFont, color: rgb(0.1, 0.1, 0.15) });
-      y -= size + lineGap;
+//   const drawText = (text: string, size = 12, bold = false) => {
+//     const usedFont = bold ? fontBold : font;
+//     const lines = wrap(text, usedFont, size, pageWidth - pageMargin * 2);
+//     lines.forEach((line) => {
+//       if (y < pageMargin + size) { page = addPage(); y = pageHeight - pageMargin; }
+//       page.drawText(line, { x: pageMargin, y, size, font: usedFont, color: rgb(0.1, 0.1, 0.15) });
+//       y -= size + lineGap;
+//     });
+//   };
+
+//   const divider = () => {
+//     if (y < pageMargin + 16) { page = addPage(); y = pageHeight - pageMargin; }
+//     page.drawLine({
+//       start: { x: pageMargin, y: y - 6 },
+//       end: { x: pageWidth - pageMargin, y: y - 6 },
+//       thickness: 0.5,
+//       color: rgb(0.8, 0.85, 0.9),
+//     });
+//     y -= 14;
+//   };
+
+//   // Title
+//   drawText('7-Day Meal Plan', 20, true);
+//   // divider();
+
+//   const dayLabels = ['Day 1','Day 2','Day 3','Day 4','Day 5','Day 6','Day 7'];
+//   const revealDays = 2;
+
+//   // Days
+//   plan.meals.forEach((day, i) => {
+//     const isHidden = previewOnly && i >= revealDays;
+//     drawText(dayLabels[i] || `Day ${i + 1}`, 14, true);
+
+//     if (isHidden) {
+//       drawText('Sign in to view the full plan for this day.', 12);
+//       // divider();
+//       return;
+//     }
+
+//     (['breakfast', 'lunch', 'dinner'] as const).forEach((slot) => {
+//       const meal = day[slot];
+//       drawText(cap(slot), 12, true);
+//       drawText(`${meal.dish} · ${meal.cookingDuration}`, 12);
+//       drawText('Ingredients:', 12, true);
+//       meal.ingredients.forEach((it) => drawText(`• ${it}`, 12));
+//       drawText('Recipe:', 12, true);
+//       meal.recipe.forEach((step, idx) => drawText(`${idx + 1}. ${step}`, 12));
+//       y -= 4;
+//     });
+
+//     // divider();
+//   });
+
+//   // Grocery List
+//   drawText('Consolidated Grocery List', 14, true);
+//   const items = previewOnly ? plan.groceryList.slice(0, 8) : plan.groceryList;
+//   items.forEach((g) => drawText(`• ${g.ingredient} — ${g.quantity}`, 12));
+//   if (previewOnly && plan.groceryList.length > 8) {
+//     drawText('Sign in to view the full grocery list…', 12);
+//   }
+
+//   const bytes = await pdf.save();
+//   return bytes;
+
+//   // ---- helpers ----
+//   function cap(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); }
+//   function wrap(text: string, fnt: any, size: number, maxWidth: number): string[] {
+//     const words = (text || '').split(/\s+/);
+//     const lines: string[] = [];
+//     let line = '';
+//     for (const w of words) {
+//       const test = line ? `${line} ${w}` : w;
+//       if (fnt.widthOfTextAtSize(test, size) > maxWidth) {
+//         if (line) lines.push(line);
+//         line = w;
+//       } else {
+//         line = test;
+//       }
+//     }
+//     if (line) lines.push(line);
+//     return lines;
+//   }
+// }
+
+async function renderPdf(html: string): Promise<Uint8Array> {
+      const browser = await getBrowser();
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "1cm", right: "1cm", bottom: "1cm", left: "1cm" }
     });
-  };
+    await browser.close();
 
-  const divider = () => {
-    if (y < pageMargin + 16) { page = addPage(); y = pageHeight - pageMargin; }
-    page.drawLine({
-      start: { x: pageMargin, y: y - 6 },
-      end: { x: pageWidth - pageMargin, y: y - 6 },
-      thickness: 0.5,
-      color: rgb(0.8, 0.85, 0.9),
-    });
-    y -= 14;
-  };
-
-  // Title
-  drawText('7-Day Meal Plan', 20, true);
-  // divider();
-
-  const dayLabels = ['Day 1','Day 2','Day 3','Day 4','Day 5','Day 6','Day 7'];
-  const revealDays = 2;
-
-  // Days
-  plan.meals.forEach((day, i) => {
-    const isHidden = previewOnly && i >= revealDays;
-    drawText(dayLabels[i] || `Day ${i + 1}`, 14, true);
-
-    if (isHidden) {
-      drawText('Sign in to view the full plan for this day.', 12);
-      // divider();
-      return;
-    }
-
-    (['breakfast', 'lunch', 'dinner'] as const).forEach((slot) => {
-      const meal = day[slot];
-      drawText(cap(slot), 12, true);
-      drawText(`${meal.dish} · ${meal.cookingDuration}`, 12);
-      drawText('Ingredients:', 12, true);
-      meal.ingredients.forEach((it) => drawText(`• ${it}`, 12));
-      drawText('Recipe:', 12, true);
-      meal.recipe.forEach((step, idx) => drawText(`${idx + 1}. ${step}`, 12));
-      y -= 4;
-    });
-
-    // divider();
-  });
-
-  // Grocery List
-  drawText('Consolidated Grocery List', 14, true);
-  const items = previewOnly ? plan.groceryList.slice(0, 8) : plan.groceryList;
-  items.forEach((g) => drawText(`• ${g.ingredient} — ${g.quantity}`, 12));
-  if (previewOnly && plan.groceryList.length > 8) {
-    drawText('Sign in to view the full grocery list…', 12);
-  }
-
-  const bytes = await pdf.save();
-  return bytes;
-
-  // ---- helpers ----
-  function cap(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); }
-  function wrap(text: string, fnt: any, size: number, maxWidth: number): string[] {
-    const words = (text || '').split(/\s+/);
-    const lines: string[] = [];
-    let line = '';
-    for (const w of words) {
-      const test = line ? `${line} ${w}` : w;
-      if (fnt.widthOfTextAtSize(test, size) > maxWidth) {
-        if (line) lines.push(line);
-        line = w;
-      } else {
-        line = test;
-      }
-    }
-    if (line) lines.push(line);
-    return lines;
-  }
+    return pdfBuffer
 }
 
 export async function POST(req: Request) {
@@ -355,9 +383,9 @@ export async function POST(req: Request) {
     if (profile.plan === 'paid') {
       // Check if tries is already at the limit
       tries = profile.tries;
-      if ((profile.tries ?? 0) >= 10) {
+      if ((profile.tries ?? 0) >= 20) {
         return NextResponse.json(
-          { error: 'limit_reached', message: 'Buy more credits or wait for reset' },
+          { error: 'limit_reached', message: 'You are out of credits for this month!' },
           { status: 402 }
         );
       }
@@ -375,8 +403,8 @@ export async function POST(req: Request) {
   const responseContent = completion.choices[0]?.message?.content ?? '';
   const plan = safeParsePlan(responseContent);
 
-  // const html = planToHTML(plan, { title: '7‑Day Meal Plan', people: Number(peopleCount) || 1 }, trial.allowed);
-  const pdf = await renderPdf(plan, trial.allowed);
+  const html = planToHTML(plan, { title: '7‑Day Meal Plan', people: Number(peopleCount) || 1 }, trial.allowed);
+  const pdf = await renderPdf(html);
   if (user) {
     const { error: incErr } = await admin
       .from('profiles')

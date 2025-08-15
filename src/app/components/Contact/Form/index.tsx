@@ -17,11 +17,9 @@ const ContactForm = () => {
     cuisine: '',
     note: '',
   })
-  const [submitted, setSubmitted] = useState(false)
   const [showThanks, setShowThanks] = useState(false)
   const [loader, setLoader] = useState(false)
   const [isFormValid, setIsFormValid] = useState(false)
-  const [trialEnded, setTrialEnded] = useState(false)
   const [isSignInOpen, setIsSignInOpen] = useState(false)
   const [isSignUpOpen, setIsSignUpOpen] = useState(false)
   const [user, setUser] = useState<any>();
@@ -84,7 +82,6 @@ const ContactForm = () => {
         return;
       } else if (data.error === 'limit_reached') {
         toast('You have used up all your credits!')
-        setIsPlanOpen(true);
         return;
       }
       setIsSignInOpen(true);
@@ -92,8 +89,8 @@ const ContactForm = () => {
     }
 
     if (!res.ok) {
-      setLoader(false)
       console.error('Error generating PDF');
+      setLoader(false)
       return;
     } else {
       const blob = await res.blob();
@@ -109,13 +106,9 @@ const ContactForm = () => {
 
       // Cleanup the URL object
       window.URL.revokeObjectURL(url);
-      setSubmitted(true)
-      setShowThanks(true)
+      toast('Meal PLan Created!')
+      setLoader(false)
       reset()
-
-      setTimeout(() => {
-        setShowThanks(false)
-      }, 5000)
     } 
   }
 
@@ -157,6 +150,7 @@ const ContactForm = () => {
                   onChange={handleChange}
                   className='w-full text-base px-4 rounded-md py-2.5 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'>
                   <option value=''>Choose your Preference</option>
+                  <option value='No Preference'>No Preference</option>
                   <option value='Vegetarian'>Vegetarian</option>
                   <option value='Vegan'>Vegan</option>
                   <option value='Keto'>Keto</option>
@@ -212,7 +206,7 @@ const ContactForm = () => {
                 value={formData.note}
                 onChange={handleChange}
                 className='w-full mt-2 rounded-md px-5 py-3 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'
-                placeholder='Anything else you wanna communicate'></textarea>
+                placeholder='Anything else you want to communicate like allergies or other preferences'></textarea>
             </div>
             <div className='mx-0 my-2.5 w-full'>
               <button
@@ -224,7 +218,7 @@ const ContactForm = () => {
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-primary border-primary text-white hover:bg-transparent hover:text-primary cursor-pointer'
                     }`}>
-                Get Your Plan
+                {loader ? 'Creating Your Plan...' : 'Get Your Plan'}
               </button>
             </div>
           </form>
@@ -243,7 +237,7 @@ const ContactForm = () => {
             height={68}
           />
           <p className='text-lg font-normal text-[13px]'>
-            Discover Unlimited <br /> Plans!
+            Plan your meals <br /> with MealPlanGo!
           </p>
         </div>
       </div>
@@ -302,19 +296,21 @@ const ContactForm = () => {
                       className='text-black hover:text-primary text-24 inline-block me-2'
                     />
                   </button>
-                  <div className='flex flex-col gap-2'>
-                    <span>Buy 10 credits for just $3.99</span>
-                    <span>(10 credits = 10 Downloadable meal plans and grocery list)</span>
-                    <a className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out lemonsqueezy-button' href="https://kulfi.lemonsqueezy.com/buy/16d53874-c04f-47bf-8a7b-0eaf88691ef0?embed=1">Buy 10 Credits</a><script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
-                    {/* <Link
+                  <div className='flex flex-col gap-5 mt-5'>
+                    <span>Get <span className='font-semibold text-orange-500'>20</span> Meal Plans + Grocery Lists for just $5.99 per month!</span>
+                    {/* <a href={`https://kulfi.lemonsqueezy.com/buy/5fcaa060-e3d5-46cb-8b62-14759a5818e3?embed=1?checkout[custom][user_id]=123`} className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out lemonsqueezy-button'>Buy MealPlanGo - Monthly Subscription</a><script src="https://assets.lemonsqueezy.com/lemon.js" defer></script> */}
+                    {/* <a href={`https://kulfi.lemonsqueezy.com/buy/cdda4f9d-94dc-4b36-88ed-84f5f6d0a483?embed=1?checkout[custom][user_id]=123`} className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out lemonsqueezy-button'>Buy MealPlanGo - Monthly Subscription</a><script src="https://assets.lemonsqueezy.com/lemon.js" defer></script> */}
+                    <Link
                       className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
-                    onClick={() => {
-                      setIsPlanOpen(false)
-                    }}
-                    href='https://kulfi.lemonsqueezy.com/buy/16d53874-c04f-47bf-8a7b-0eaf88691ef0'
-                    target='_blank'>
-                      Purchase 10 Credits
-                    </Link> */}
+                      onClick={() => {
+                        setIsPlanOpen(false)
+                      }}
+                      // href='https://kulfi.lemonsqueezy.com/buy/16d53874-c04f-47bf-8a7b-0eaf88691ef0'
+                      href={`https://kulfi.lemonsqueezy.com/buy/cdda4f9d-94dc-4b36-88ed-84f5f6d0a483?checkout[custom][user_id]=${user.id}`}
+                      target='_blank'
+                    >
+                      Buy MealPlanGo - Monthly Subscription
+                    </Link>
                   </div>
                   
                   {/* <SignUp setIsSignUpOpen={setIsSignUpOpen} setIsSignInOpen={setIsSignInOpen} /> */}
