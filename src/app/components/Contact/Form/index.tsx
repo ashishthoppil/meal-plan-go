@@ -230,7 +230,7 @@ const ContactForm = () => {
           </form> :
           <div className='flex flex-col gap-10 items-center justify-center'>
             <Image alt='Preparing Meal Plans' src={'/images/preparing.gif'} width={150} height={150} />
-            <span className='text-center'>Carefully curating your meal plan. This might take a minute. <br/>We thank you for your patience! ❤️</span>
+            <span className='text-center'>Preparing your plan, should be ready in under a minute! ❤️</span>
           </div>
           }
         </div>
