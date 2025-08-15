@@ -155,7 +155,6 @@ async function renderPdf(plan: PlanResponse, previewOnly: boolean): Promise<Uint
 
 export async function POST(req: Request) {
   const { email, dietPreference, peopleCount, cuisine, additionalNote, user, trial } = await req.json();
-console.log('trialtrial', trial)
   let tries = 0;
 // User is not signed in and has used up his/her trial
   if (!trial.allowed && !user) {
@@ -208,7 +207,7 @@ console.log('trialtrial', trial)
   // const html = planToHTML(plan, { title: '7‑Day Meal Plan', people: Number(peopleCount) || 1 }, trial.allowed);
   const pdf = await renderPdf(plan, trial.allowed);
   if (user) {
-    admin
+    const { error: incErr } = await admin
       .from('profiles')
       .update({ tries: (tries ?? 0) + 1 })
       .eq('email', email.toLowerCase());
