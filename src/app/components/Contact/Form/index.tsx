@@ -125,7 +125,7 @@ const ContactForm = () => {
   return (
     <section id='reserve' className='scroll-mt-20'>
       <div className='container'>
-        <div className='flex items-center justify-center relative border px-6 py-6 rounded-xl shadow-sm min-w-[35rem] min-h-[35rem] h-[35rem]'>
+        <div className='flex items-center justify-center relative border px-6 py-6 rounded-xl shadow-sm min-w-full min-h-full h-full  md:min-w-[35rem] md:min-h-[35rem] md:h-[35rem]'>
           {!loader ? <form
             onSubmit={handleSubmit}
             className='flex flex-wrap w-full m-auto justify-between '>
