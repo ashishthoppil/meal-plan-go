@@ -16,8 +16,8 @@ export async function checkAndConsumeTrial(opts: { ip?: string; ua?: string }) {
     .select('ip_hash')
     .eq('ip_hash', opts.ip)
     .eq('ua_hash', opts.ua)
-    console.log('data', data);
-    console.log('data1', data?.length);
+    console.log('data', opts.ip);
+    console.log('data1', opts.ua);
   if (data?.length && data.length > 0) return { allowed: false };
 
   // 2) consume (insert row)
