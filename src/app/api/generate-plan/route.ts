@@ -42,7 +42,6 @@ function safeParsePlan(content: string): PlanResponse {
   // const raw = stripCodeFence(content).trim();
   try {
     const parsed = JSON.parse(content);
-    console.log('parsedparsed', content)
     if (!parsed || !Array.isArray(parsed.meals) || !Array.isArray(parsed.groceryList)) {
       throw new Error('Malformed JSON structure.');
     }
@@ -52,30 +51,38 @@ function safeParsePlan(content: string): PlanResponse {
   }
 }
 
-function buildPrompt({ peopleCount, dietPreference, cuisine, additionalNote }: any) {
-  return `You are a professional meal planner.\nCreate a 7-day meal plan for ${peopleCount} people.\nDiet preference: ${dietPreference}.\nPreferred cuisines: ${cuisine}.\nAdditional note: ${additionalNote || 'None'}.\nNumber of meals a day: 3.\n\nSTRICTLY return valid JSON matching this format (no prose, no explanations, no markdown fences):\n{\n  "meals": [\n    {\n      "breakfast": {\n        "dish": "Name",\n        "cookingDuration": "10 minutes. Eg: 10 minutes",\n        "ingredients": ["..."],\n        "recipe": ["Step 1", "Step 2"]\n      },\n      "lunch": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] },\n      "dinner": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] }\n    }\n  ],\n  "groceryList": [ { "ingredient": "Chicken Breast", "quantity": "1.1 lb (500 g)" } ]\n}\n\
-  Hard rules:
-- "meals" MUST have exactly 7 entries (Mon..Sun).
-- Keep meals simple, healthy, and realistic for weeknights; prep ≤ 30–40 minutes where possible.
-- Ingredients MUST be readily available in mainstream US/UK supermarkets (e.g., Walmart, Target, Tesco, Sainsbury’s).
-- Units: Provide BOTH US customary AND metric for each grocery item, e.g., "1 lb (454 g)", "2 cups (480 ml)". Round neatly.
-- Avoid brand names. Use common US/UK names (e.g., "cilantro/coriander", "zucchini/courgette", "arugula/rocket") when relevant.
+function dietGuards(dietPreference: string) {
+  const pref = dietPreference.toLowerCase();
 
-Variety rules (STRICT):
-- No dish name may repeat within the 7 days (breakfast/lunch/dinner all unique).
-- Day 1 BREAKFAST must NOT include any oats. Forbidden in Day 1 breakfast dish/ingredients: ["oat", "oats", "oatmeal", "porridge", "overnight oats", "muesli"].
-- Across breakfasts, include at least: one savory option AND one non-oat light option (e.g., eggs/tofu scramble, avocado toast on whole-grain, yogurt/plant-yogurt parfait, chia pudding, pancakes/crepes, English muffin + egg).
-- Rotate proteins and grains across the week (legumes, poultry, fish/tofu/tempeh, paneer/eggs as applicable), and vary veggies.
+  if (pref.includes('vegan')) {
+    return `
+Diet compliance (STRICT):
+- Vegan ONLY. Absolutely NO animal products: no meat, poultry, seafood, eggs, dairy, honey, gelatin, fish sauce, oyster sauce, shrimp paste, Worcestershire (anchovy), ghee, butter, paneer, yogurt, cheese, cream, mayonnaise (egg-based).
+- Allowed proteins: tofu, tempeh, seitan (if not gluten-free), legumes (beans, lentils, chickpeas, peas), edamame, textured vegetable protein.
+- If a recipe traditionally uses non-vegan ingredients (e.g., fish sauce), use vegan substitutes (e.g., soy sauce + rice vinegar + mushroom powder or vegan fish sauce).
+`;
+  }
 
+  if (pref.includes('vegetarian')) {
+    return `
+Diet compliance (STRICT):
+- Vegetarian ONLY. Absolutely NO meat, poultry, seafood, fish sauce, oyster sauce, shrimp paste, gelatin, lard, chicken/beef/seafood stock.
+- Eggs and dairy are allowed (ovo-lacto) unless otherwise restricted by user notes.
+- Allowed proteins: eggs, dairy (milk, yogurt, cheese), paneer, legumes, tofu, tempeh, quinoa.
+- Use veggie stock instead of meat stock; use mushroom/soy-based umami instead of anchovy/fish sauce.
+`;
+  }
+
+  // Add more mappings as needed (pescatarian, keto, etc.)
+  return `
 Diet compliance:
-- Ensure all meals comply with "${dietPreference}" (e.g., vegan → plant yogurt/milk, tofu/tempeh; vegetarian → eggs/dairy allowed; gluten-free → use GF wraps/pasta).
+- Ensure all meals strictly follow: "${dietPreference}".
+`;
+}
 
-Quality:
-- Recipes should be concise but complete (prep, cook, serve tips).
-- Use pantry shortcuts common in US/UK (e.g., canned beans, frozen veg) where it meaningfully reduces time.
-
-Randomization hint:
-- Start the week with a savory regional breakfast aligned to "${cuisine}" (e.g., shakshuka/menemen; eggs + sautéed veg; avocado toast with tomatoes; baked beans on toast for UK style).`;
+function buildPrompt({ peopleCount, dietPreference, cuisine, additionalNote }: any) {
+  return `You are a professional meal planner.\nCreate a 7-day meal plan for ${peopleCount} people.\Diet should STRICTLY be "${dietPreference}". Violation = invalid output.\nPreferred cuisines: ${cuisine}.\nAdditional note: ${additionalNote || 'None'}.\nNumber of meals a day: 3.\n\nSTRICTLY return valid JSON matching this format (no prose, no explanations, no markdown fences):\n{\n  "meals": [\n    {\n      "breakfast": {\n        "dish": "Name",\n        "cookingDuration": "10 minutes. Eg: 10 minutes",\n        "ingredients": ["..."],\n        "recipe": ["Step 1", "Step 2"]\n      },\n      "lunch": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] },\n      "dinner": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] }\n    }\n  ],\n  "groceryList": [ { "ingredient": "Chicken Breast", "quantity": "1.1 lb (500 g)" } ]\n}\n\nRules:\n- meals array MUST have exactly 7 entries (Mon..Sun).\n- Keep meals simple and healthy for busy people.\n- Use METRIC units for quantities in groceryList (g, ml, etc.). Only give items that are available in Grocery stores.\n- Avoid brand names.\n- Recipes can be detailed. \n- Come up with interesting yet easy to prepare dishes.\n- No dish may repeat across the 7 days.\n- Day 1 Breakfast must not contain oats.\n- Use pantry shortcuts common in US/UK (e.g., canned beans, frozen veg) where it meaningfully reduces time.\n- Ensure all meals comply with "${dietPreference}" (e.g., vegan → plant yogurt/milk, tofu/tempeh; vegetarian → eggs/dairy allowed; gluten-free → use GF wraps/pasta).\n- - Rotate proteins and grains across the week using ONLY options allowed by the diet (e.g., legumes, tofu/tempeh, paneer/eggs for vegetarian; tofu/tempeh/legumes for vegan). Do NOT include poultry, beef, pork, fish, or seafood unless the diet explicitly allows it.
+  ${dietGuards(dietPreference)}`;
 }
 
 async function renderPdf(plan: PlanResponse, previewOnly: boolean, peopleCount?: number): Promise<Uint8Array> {
@@ -284,9 +291,11 @@ export async function POST(req: Request) {
     response_format: { type: 'json_object' },
     messages: [
     { role: 'system', content: 'Output a single valid JSON object only.' },
+    { role: 'system', content: `Randomization seed: ${Math.floor(Math.random()*1e9)}` },
     { role: 'user', content: prompt }
   ],
     temperature: 0.6,
+    top_p: 0.9 
   });
 
   const responseContent = completion.choices[0]?.message?.content ?? '';

@@ -66,10 +66,10 @@ const ContactForm = () => {
       method: 'POST',
       body: JSON.stringify({
           email: formData.email,
-          diet: formData.diet,
-          people: formData.people,
+          dietPreference: formData.diet,
+          peopleCount: formData.people,
           cuisine: formData.cuisine,
-          note: formData.note,
+          additionalNote: formData.note,
           user
         }),
       headers: { 'Content-Type': 'application/json' },
