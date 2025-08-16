@@ -6,7 +6,7 @@ import { supabase } from '@/utils/supabase/client'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 
-const Signin = ({ setIsSignInOpen, setIsSignUpOpen }: any) => {
+const Signin = ({ setIsSignInOpen, setIsSignUpOpen, setIsPlanOpen }: any) => {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -18,9 +18,9 @@ const Signin = ({ setIsSignInOpen, setIsSignUpOpen }: any) => {
         <Logo />
       </div>
 
-      {/* <SocialSignIn /> */}
+      {/* <SocialSignIn />
 
-      {/* <span className='z-1 relative my-8 block text-center  before:absolute before:h-px before:w-[40%] before:bg-black/20 before:left-0 before:top-3  after:absolute after:h-px after:w-[40%] after:bg-black/20 after:top-3 after:right-0'>
+      <span className='z-1 relative my-8 block text-center  before:absolute before:h-px before:w-[40%] before:bg-black/20 before:left-0 before:top-3  after:absolute after:h-px after:w-[40%] after:bg-black/20 after:top-3 after:right-0'>
         <span className='text-body-secondary relative z-10 inline-block px-3 text-base text-black'>
           OR
         </span>
@@ -28,12 +28,24 @@ const Signin = ({ setIsSignInOpen, setIsSignUpOpen }: any) => {
 
       <form onSubmit={async (e) => {
         e.preventDefault();
-        const { error } = await supabase().auth.signInWithPassword({ email, password })
+        const { error, data : { user } } = await supabase().auth.signInWithPassword({ email, password })
+        const res = await fetch('/api/get-plan', {
+          method: 'POST',
+          body: JSON.stringify({
+              email: user?.email,
+          }),
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+        
         if (error) {
           setErr(error.message)
         } else {
           toast(`Signed In Successfully!`)
           setIsSignInOpen(false);
+          if (data.plan === 'free') {
+            setIsPlanOpen(true)
+          }
         }
       }}>
         <div className='mb-[22px]'>

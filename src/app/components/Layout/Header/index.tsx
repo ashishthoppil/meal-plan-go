@@ -18,6 +18,7 @@ const Header: React.FC = () => {
   const [sticky, setSticky] = useState(false)
   const [isSignInOpen, setIsSignInOpen] = useState(false)
   const [isSignUpOpen, setIsSignUpOpen] = useState(false)
+  const [isPlanOpen, setIsPlanOpen] = useState<any>(false);
 
   const navbarRef = useRef<HTMLDivElement>(null)
   const signInRef = useRef<HTMLDivElement>(null)
@@ -29,10 +30,11 @@ const Header: React.FC = () => {
   useEffect(() => {
     const fetchUser = async () => {
       const userInfo = await checkAuth();
+      console.log('userInfo', userInfo);
       setUser(userInfo);
     };
     fetchUser();
-  }, [isSignInOpen]);
+  }, [isSignInOpen, isSignUpOpen]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -125,7 +127,7 @@ const Header: React.FC = () => {
                       className='text-black hover:text-primary text-24 inline-block me-2'
                     />
                   </button>
-                  <Signin setIsSignInOpen={setIsSignInOpen} setIsSignUpOpen={setIsSignUpOpen} />
+                  <Signin setIsSignInOpen={setIsSignInOpen} setIsSignUpOpen={setIsSignUpOpen} setIsPlanOpen={setIsPlanOpen} />
                 </div>
               </div>
             )}
@@ -161,7 +163,40 @@ const Header: React.FC = () => {
                       className='text-black hover:text-primary text-24 inline-block me-2'
                     />
                   </button>
-                  <SignUp setIsSignUpOpen={setIsSignUpOpen} setIsSignInOpen={setIsSignInOpen} />
+                  <SignUp setIsSignUpOpen={setIsSignUpOpen} setIsSignInOpen={setIsSignInOpen} setIsPlanOpen={setIsPlanOpen} />
+                </div>
+              </div>
+            )}
+            {isPlanOpen && user && (
+              <div className='fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50'>
+                <div
+                  className='relative mx-auto w-full max-w-md overflow-hidden rounded-lg bg-dark_grey/90 bg-white backdrop-blur-md px-8 pt-14 pb-8 text-center'>
+                  <button
+                    onClick={() => setIsPlanOpen(false)}
+                    className='absolute top-0 right-0 mr-4 mt-8 hover:cursor-pointer'
+                    aria-label='Close Sign Up Modal'>
+                    <Icon
+                      icon='material-symbols:close-rounded'
+                      width={24}
+                      height={24}
+                      className='text-black hover:text-primary text-24 inline-block me-2'
+                    />
+                  </button>
+                  <div className='flex flex-col gap-5 mt-5'>
+                    <span>Get <span className='font-semibold text-orange-500'>20</span> Meal Plans + Grocery Lists for just $5.99 per month!</span>
+                    <Link
+                      className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
+                      onClick={() => {
+                        setIsPlanOpen(false)
+                      }}
+                      // href='https://kulfi.lemonsqueezy.com/buy/16d53874-c04f-47bf-8a7b-0eaf88691ef0'
+                      href={`https://kulfi.lemonsqueezy.com/buy/5fcaa060-e3d5-46cb-8b62-14759a5818e3?checkout[custom][user_id]=${user?.id}`}
+                      target='_blank'
+                    >
+                      Buy MealPlanGo - Monthly Subscription
+                    </Link>
+                  </div>
+                  
                 </div>
               </div>
             )}

@@ -263,7 +263,7 @@ const ContactForm = () => {
                       className='text-black hover:text-primary text-24 inline-block me-2'
                     />
                   </button>
-                  <Signin setIsSignInOpen={setIsSignInOpen} setIsSignUpOpen={setIsSignUpOpen} />
+                  <Signin setIsSignInOpen={setIsSignInOpen} setIsSignUpOpen={setIsSignUpOpen} setIsPlanOpen={setIsPlanOpen} />
                 </div>
               </div>
             )}
@@ -282,7 +282,7 @@ const ContactForm = () => {
                       className='text-black hover:text-primary text-24 inline-block me-2'
                     />
                   </button>
-                  <SignUp setIsSignUpOpen={setIsSignUpOpen} setIsSignInOpen={setIsSignInOpen} />
+                  <SignUp setIsSignUpOpen={setIsSignUpOpen} setIsSignInOpen={setIsSignInOpen} setIsPlanOpen={setIsPlanOpen} />
                 </div>
               </div>
             )}
@@ -303,22 +303,19 @@ const ContactForm = () => {
                   </button>
                   <div className='flex flex-col gap-5 mt-5'>
                     <span>Get <span className='font-semibold text-orange-500'>20</span> Meal Plans + Grocery Lists for just $5.99 per month!</span>
-                    {/* <a href={`https://kulfi.lemonsqueezy.com/buy/5fcaa060-e3d5-46cb-8b62-14759a5818e3?embed=1?checkout[custom][user_id]=123`} className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out lemonsqueezy-button'>Buy MealPlanGo - Monthly Subscription</a><script src="https://assets.lemonsqueezy.com/lemon.js" defer></script> */}
-                    {/* <a href={`https://kulfi.lemonsqueezy.com/buy/cdda4f9d-94dc-4b36-88ed-84f5f6d0a483?embed=1?checkout[custom][user_id]=123`} className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out lemonsqueezy-button'>Buy MealPlanGo - Monthly Subscription</a><script src="https://assets.lemonsqueezy.com/lemon.js" defer></script> */}
                     <Link
                       className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
                       onClick={() => {
                         setIsPlanOpen(false)
                       }}
                       // href='https://kulfi.lemonsqueezy.com/buy/16d53874-c04f-47bf-8a7b-0eaf88691ef0'
-                      href={`https://kulfi.lemonsqueezy.com/buy/cdda4f9d-94dc-4b36-88ed-84f5f6d0a483?checkout[custom][user_id]=${user.id}`}
+                      href={`https://kulfi.lemonsqueezy.com/buy/5fcaa060-e3d5-46cb-8b62-14759a5818e3?checkout[custom][user_id]=${user.id}`}
                       target='_blank'
                     >
                       Buy MealPlanGo - Monthly Subscription
                     </Link>
                   </div>
                   
-                  {/* <SignUp setIsSignUpOpen={setIsSignUpOpen} setIsSignInOpen={setIsSignInOpen} /> */}
                 </div>
               </div>
             )}

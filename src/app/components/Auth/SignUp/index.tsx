@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { supabase } from '@/utils/supabase/client'
 import { toast } from 'react-toastify';
 
-const SignUp = ({ setIsSignUpOpen, setIsSignInOpen }: any) => {  
+const SignUp = ({ setIsSignUpOpen, setIsSignInOpen, setIsPlanOpen }: any) => {  
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -27,13 +27,15 @@ const SignUp = ({ setIsSignUpOpen, setIsSignInOpen }: any) => {
       },
     });
 
+
     setLoading(false);
     if (error) {
       setErr(error.message);
     } else {
       setIsSignUpOpen(false);
-      const signIn = await supabase().auth.signInWithPassword({ email, password })
-
+      
+      const { data: { user } } = await supabase().auth.signInWithPassword({ email, password })
+      setIsPlanOpen(true)
       toast('Successfully Registered!', {
         progressClassName: 'bg-orange-500'
       })
@@ -46,9 +48,9 @@ const SignUp = ({ setIsSignUpOpen, setIsSignInOpen }: any) => {
         <Logo />
       </div>
 
-      {/* <SocialSignUp /> */}
+      {/* <SocialSignUp />
 
-      {/* <span className="z-1 relative my-8 block text-center before:content-[''] before:absolute before:h-px before:w-[40%] before:bg-black/20 before:bg-opacity-60 before:left-0 before:top-3 after:content-[''] after:absolute after:h-px after:w-[40%] after:bg-black/20 after:bg-opacity-60 after:top-3 after:right-0">
+      <span className="z-1 relative my-8 block text-center before:content-[''] before:absolute before:h-px before:w-[40%] before:bg-black/20 before:bg-opacity-60 before:left-0 before:top-3 after:content-[''] after:absolute after:h-px after:w-[40%] after:bg-black/20 after:bg-opacity-60 after:top-3 after:right-0">
         <span className='text-body-secondary relative z-10 inline-block px-3 text-base text-black'>
           OR
         </span>

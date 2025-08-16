@@ -53,10 +53,10 @@ function safeParsePlan(content: string): PlanResponse {
 }
 
 function buildPrompt({ peopleCount, dietPreference, cuisine, additionalNote }: any) {
-  return `You are a professional meal planner.\nCreate a 7-day meal plan for ${peopleCount} people.\nDiet preference: ${dietPreference}.\nPreferred cuisines: ${cuisine}.\nAdditional note: ${additionalNote || 'None'}.\nNumber of meals a day: 3.\n\nSTRICTLY return valid JSON matching this shape (no prose, no explanations, no markdown fences):\n{\n  "meals": [\n    {\n      "breakfast": {\n        "dish": "Oatmeal",\n        "cookingDuration": "5 minutes",\n        "ingredients": ["..."],\n        "recipe": ["Step 1", "Step 2"]\n      },\n      "lunch": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] },\n      "dinner": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] }\n    }\n  ],\n  "groceryList": [ { "ingredient": "Chicken", "quantity": "500 g" } ]\n}\n\nRules:\n- meals array MUST have exactly 7 entries (Mon..Sun).\n- Keep meals simple and healthy for busy people.\n- Use METRIC units for quantities in groceryList (g, ml, etc.).\n- Avoid brand names.`;
+  return `You are a professional meal planner.\nCreate a 7-day meal plan for ${peopleCount} people.\nDiet preference: ${dietPreference}.\nPreferred cuisines: ${cuisine}.\nAdditional note: ${additionalNote || 'None'}.\nNumber of meals a day: 3.\n\nSTRICTLY return valid JSON matching this format (no prose, no explanations, no markdown fences):\n{\n  "meals": [\n    {\n      "breakfast": {\n        "dish": "Name of the dish",\n        "cookingDuration": "cooking duration in minutes",\n        "ingredients": ["..."],\n        "recipe": ["Step 1", "Step 2"]\n      },\n      "lunch": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] },\n      "dinner": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] }\n    }\n  ],\n  "groceryList": [ { "ingredient": "Chicken", "quantity": "500 g" } ]\n}\n\nRules:\n- meals array MUST have exactly 7 entries (Mon..Sun).\n- Keep meals simple and healthy for busy people.\n- Use METRIC units for quantities in groceryList (g, ml, etc.). Only give items that are available in Grocery stores.\n- Avoid brand names.\n- Recipes can be detailed.`;
 }
 
-async function renderPdf(plan: PlanResponse, previewOnly: boolean): Promise<Uint8Array> {
+async function renderPdf(plan: PlanResponse, previewOnly: boolean, peopleCount?: number): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   const pageMargin = 50;
   const pageWidth = 595.28;  // A4 width pt
@@ -70,30 +70,88 @@ async function renderPdf(plan: PlanResponse, previewOnly: boolean): Promise<Uint
   let page = addPage();
   let y = pageHeight - pageMargin;
 
-  const drawText = (text: string, size = 12, bold = false) => {
+  const drawText = (text: string, size = 12, bold = false, align?: 'left' | 'center' | 'right', underline?: boolean, marginBottom?: number) => {
     const usedFont = bold ? fontBold : font;
     const lines = wrap(text, usedFont, size, pageWidth - pageMargin * 2);
-    lines.forEach((line) => {
+    lines.forEach((line, idx) => {
       if (y < pageMargin + size) { page = addPage(); y = pageHeight - pageMargin; }
-      page.drawText(line, { x: pageMargin, y, size, font: usedFont, color: rgb(0.1, 0.1, 0.15) });
+      const lineWidth = usedFont.widthOfTextAtSize(line, size);
+      // compute x based on alignment
+      let x = pageMargin;
+      if (align === 'center') x = (pageWidth - lineWidth) / 2;
+      else if (align === 'right') x = pageWidth - pageMargin - lineWidth;
+      // draw the text
+      page.drawText(line, {
+        x,
+        y,
+        size,
+        font: usedFont,
+        color: rgb(0.1, 0.1, 0.15),
+      });
+      // optional underline (per line)
+      if (underline) {
+        const underlineOffset = 2;      // distance below baseline
+        const thickness = Math.max(0.5, size * 0.05);
+        page.drawLine({
+          start: { x, y: y - underlineOffset },
+          end:   { x: x + lineWidth, y: y - underlineOffset },
+          thickness,
+          color: rgb(0.1, 0.1, 0.15),
+        });
+      }
       y -= size + lineGap;
+
+      // if it’s the *last line*, also apply marginBottom
+      if (idx === lines.length - 1 && marginBottom) {
+        y -= marginBottom;
+      }
     });
   };
 
-  const divider = () => {
-    if (y < pageMargin + 16) { page = addPage(); y = pageHeight - pageMargin; }
+  const divider = (opts: { marginTop?: number; marginBottom?: number } = {}) => {
+    const { marginTop = 8, marginBottom = 8 } = opts;
+
+    // apply top margin before drawing
+    y -= marginTop;
+
+    if (y < pageMargin + 16) { 
+      page = addPage(); 
+      y = pageHeight - pageMargin; 
+    }
+
     page.drawLine({
       start: { x: pageMargin, y: y - 6 },
       end: { x: pageWidth - pageMargin, y: y - 6 },
       thickness: 0.5,
       color: rgb(0.8, 0.85, 0.9),
     });
-    y -= 14;
+
+    // move cursor below line + bottom margin
+    y -= 6 + marginBottom;
   };
 
+  const pngImage = await pdf.embedPng(await fetch('https://www.meal-plan-go.online/images/Logo/icon.png').then(r => r.arrayBuffer()));
+  // get its dimensions
+  const imgWidth = 50; // desired width in pt
+  const imgHeight = (pngImage.height / pngImage.width) * imgWidth;
+
+  const imgX = pageWidth - pageMargin - imgWidth;
+
+  // place it near the top (say 40pt down from the edge)
+  const imgY = pageHeight - pageMargin - imgHeight;
+
+  page.drawImage(pngImage, {
+    x: imgX,
+    y: imgY,
+    width: imgWidth,
+    height: imgHeight,
+  });
+  drawText('', 20, true, 'center', true, 20);
   // Title
-  drawText('7-Day Meal Plan', 20, true);
+  drawText('7-Day Meal Plan', 20, true, 'center', true, 20);
   // divider();
+  drawText(`This plan is for ${peopleCount ? peopleCount : 1} person(s).`, 12, false, 'left', false, 0)
+  divider({ marginTop: 0, marginBottom: 40 });
 
   const dayLabels = ['Day 1','Day 2','Day 3','Day 4','Day 5','Day 6','Day 7'];
   const revealDays = 2;
@@ -101,26 +159,28 @@ async function renderPdf(plan: PlanResponse, previewOnly: boolean): Promise<Uint
   // Days
   plan.meals.forEach((day, i) => {
     const isHidden = previewOnly && i >= revealDays;
-    drawText(dayLabels[i] || `Day ${i + 1}`, 14, true);
+    drawText(dayLabels[i] || `Day ${i + 1}`, 14, true, 'left', true, 20);
 
     if (isHidden) {
-      drawText('Sign in to view the full plan for this day.', 12);
+      drawText('Sign in to view the full plan for this day.', 12, false, 'left', false, 20);
       // divider();
+      divider({ marginTop: 0, marginBottom: 40 });
       return;
     }
 
     (['breakfast', 'lunch', 'dinner'] as const).forEach((slot) => {
       const meal = day[slot];
-      drawText(cap(slot), 12, true);
-      drawText(`${meal.dish} · ${meal.cookingDuration}`, 12);
+      drawText(`${cap(slot)}: ${meal.dish} (${meal.cookingDuration})`, 12, true, 'left', false, 10);
+      // drawText(`${meal.dish} · ${meal.cookingDuration}`, 12);
       drawText('Ingredients:', 12, true);
-      meal.ingredients.forEach((it) => drawText(`• ${it}`, 12));
+      meal.ingredients.forEach((it, idx) => drawText(`${idx + 1}. ${it}`, 12, false, 'left', false, idx === meal.ingredients.length - 1 ? 10 : 0));
       drawText('Recipe:', 12, true);
-      meal.recipe.forEach((step, idx) => drawText(`${idx + 1}. ${step}`, 12));
+      meal.recipe.forEach((step, idx) => drawText(`${idx + 1}. ${step}`, 12, false, 'left', false, idx === meal.recipe.length - 1 ? 10 : 0));
       y -= 4;
     });
 
     // divider();
+    divider({ marginTop: 0, marginBottom: 40 });
   });
 
   // Grocery List
@@ -211,7 +271,7 @@ export async function POST(req: Request) {
   const plan = safeParsePlan(responseContent);
 
   // const html = planToHTML(plan, { title: '7‑Day Meal Plan', people: Number(peopleCount) || 1 }, trial.allowed);
-  const pdf = await renderPdf(plan, trial.allowed);
+  const pdf = await renderPdf(plan, trial.allowed, peopleCount);
   if (user) {
     const { error: incErr } = await admin
       .from('profiles')
@@ -222,7 +282,7 @@ export async function POST(req: Request) {
   return new NextResponse(pdf as any, {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="meal-plan.pdf"',
+      'Content-Disposition': 'attachment; filename="MealPlanGo-Meal-Plan-Grocery.pdf"',
     },
   });
 }
