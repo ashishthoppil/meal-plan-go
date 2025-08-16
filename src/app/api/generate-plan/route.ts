@@ -53,7 +53,29 @@ function safeParsePlan(content: string): PlanResponse {
 }
 
 function buildPrompt({ peopleCount, dietPreference, cuisine, additionalNote }: any) {
-  return `You are a professional meal planner.\nCreate a 7-day meal plan for ${peopleCount} people.\nDiet preference: ${dietPreference}.\nPreferred cuisines: ${cuisine}.\nAdditional note: ${additionalNote || 'None'}.\nNumber of meals a day: 3.\n\nSTRICTLY return valid JSON matching this format (no prose, no explanations, no markdown fences):\n{\n  "meals": [\n    {\n      "breakfast": {\n        "dish": "Name of the dish",\n        "cookingDuration": "cooking duration in minutes",\n        "ingredients": ["..."],\n        "recipe": ["Step 1", "Step 2"]\n      },\n      "lunch": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] },\n      "dinner": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] }\n    }\n  ],\n  "groceryList": [ { "ingredient": "Chicken", "quantity": "500 g" } ]\n}\n\nRules:\n- meals array MUST have exactly 7 entries (Mon..Sun).\n- Keep meals simple and healthy for busy people.\n- Use METRIC units for quantities in groceryList (g, ml, etc.). Only give items that are available in Grocery stores.\n- Avoid brand names.\n- Recipes can be detailed.`;
+  return `You are a professional meal planner.\nCreate a 7-day meal plan for ${peopleCount} people.\nDiet preference: ${dietPreference}.\nPreferred cuisines: ${cuisine}.\nAdditional note: ${additionalNote || 'None'}.\nNumber of meals a day: 3.\n\nSTRICTLY return valid JSON matching this format (no prose, no explanations, no markdown fences):\n{\n  "meals": [\n    {\n      "breakfast": {\n        "dish": "Name",\n        "cookingDuration": "10 minutes. Eg: 10 minutes",\n        "ingredients": ["..."],\n        "recipe": ["Step 1", "Step 2"]\n      },\n      "lunch": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] },\n      "dinner": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] }\n    }\n  ],\n  "groceryList": [ { "ingredient": "Chicken Breast", "quantity": "1.1 lb (500 g)" } ]\n}\n\
+  Hard rules:
+- "meals" MUST have exactly 7 entries (Mon..Sun).
+- Keep meals simple, healthy, and realistic for weeknights; prep ≤ 30–40 minutes where possible.
+- Ingredients MUST be readily available in mainstream US/UK supermarkets (e.g., Walmart, Target, Tesco, Sainsbury’s).
+- Units: Provide BOTH US customary AND metric for each grocery item, e.g., "1 lb (454 g)", "2 cups (480 ml)". Round neatly.
+- Avoid brand names. Use common US/UK names (e.g., "cilantro/coriander", "zucchini/courgette", "arugula/rocket") when relevant.
+
+Variety rules (STRICT):
+- No dish name may repeat within the 7 days (breakfast/lunch/dinner all unique).
+- Day 1 BREAKFAST must NOT include any oats. Forbidden in Day 1 breakfast dish/ingredients: ["oat", "oats", "oatmeal", "porridge", "overnight oats", "muesli"].
+- Across breakfasts, include at least: one savory option AND one non-oat light option (e.g., eggs/tofu scramble, avocado toast on whole-grain, yogurt/plant-yogurt parfait, chia pudding, pancakes/crepes, English muffin + egg).
+- Rotate proteins and grains across the week (legumes, poultry, fish/tofu/tempeh, paneer/eggs as applicable), and vary veggies.
+
+Diet compliance:
+- Ensure all meals comply with "${dietPreference}" (e.g., vegan → plant yogurt/milk, tofu/tempeh; vegetarian → eggs/dairy allowed; gluten-free → use GF wraps/pasta).
+
+Quality:
+- Recipes should be concise but complete (prep, cook, serve tips).
+- Use pantry shortcuts common in US/UK (e.g., canned beans, frozen veg) where it meaningfully reduces time.
+
+Randomization hint:
+- Start the week with a savory regional breakfast aligned to "${cuisine}" (e.g., shakshuka/menemen; eggs + sautéed veg; avocado toast with tomatoes; baked beans on toast for UK style).`;
 }
 
 async function renderPdf(plan: PlanResponse, previewOnly: boolean, peopleCount?: number): Promise<Uint8Array> {
