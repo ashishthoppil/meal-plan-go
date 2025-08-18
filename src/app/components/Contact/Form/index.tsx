@@ -123,6 +123,7 @@ const ContactForm = () => {
           <div className='lg:col-span-6 flex justify-center relative md:py-0'>
             <section id='reserve' className='scroll-mt-20'>
               <div className='container'>
+                
                 {/* min-w-full min-h-full h-full  md:min-w-[35rem] md:min-h-[35rem] md:h-[35rem] */}
                 <div id='get-plan'   className='flex items-center justify-center relative border px-6 py-6 rounded-xl shadow-sm '>
                   {!loader ? <form
@@ -222,18 +223,6 @@ const ContactForm = () => {
                     <span className='text-center'>Preparing your plan, should be ready in under a minute! ❤️</span>
                   </div>
                   }
-                </div>
-                <div className='shadow-xl flex bg-white p-2 pr-3 gap-5 items-center bottom-0 right-0 z-[1] rounded-xl relative mt-10 md:mt-0 md:absolute'>
-                  {/* <Image
-                    src={'/images/Logo/icon.webp'}
-                    alt='pizza-image'
-                    width={68}
-                    height={68}
-                  /> */}
-                  
-                  {/* <p className='text-lg font-normal text-[13px]'>
-                    Plan your meals <br /> with MealPlanGo!
-                  </p> */}
                 </div>
               </div>
 
