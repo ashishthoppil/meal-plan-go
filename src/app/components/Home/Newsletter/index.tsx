@@ -13,7 +13,7 @@ const Newsletter = () => {
                 NEWSLETTER{' '}
               </p>
               <h2 className='text-white mb-8'>
-                Subscribe to our <br /> newsletter.
+                Subscribe to<br /> our  newsletter.
               </h2>
 
               <div>
@@ -22,7 +22,7 @@ const Newsletter = () => {
                     type='Email address'
                     name='q'
                     className='pl-4 pr-16 py-4 text-sm w-full bg-white text-black rounded-full focus:outline-hidden focus:text-black'
-                    placeholder='john.doe@gmail.com'
+                    placeholder='Enter your email'
                     autoComplete='off'
                   />
                   <div className='absolute inset-y-0 right-0 flex items-center pr-2'>

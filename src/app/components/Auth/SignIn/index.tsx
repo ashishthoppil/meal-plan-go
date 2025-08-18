@@ -28,24 +28,24 @@ const Signin = ({ setIsSignInOpen, setIsSignUpOpen, setIsPlanOpen }: any) => {
 
       <form onSubmit={async (e) => {
         e.preventDefault();
-        const { error, data : { user } } = await supabase().auth.signInWithPassword({ email, password })
-        const res = await fetch('/api/get-plan', {
-          method: 'POST',
-          body: JSON.stringify({
-              email: user?.email,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const data = await res.json();
-        
+        const { error, data : { user } } = await supabase().auth.signInWithPassword({ email, password })        
         if (error) {
           setErr(error.message)
         } else {
-          toast(`Signed In Successfully!`)
           setIsSignInOpen(false);
+          localStorage.setItem('mpg_email', email);
+          const res = await fetch('/api/get-plan', {
+            method: 'POST',
+            body: JSON.stringify({
+                email: user?.email,
+            }),
+            headers: { 'Content-Type': 'application/json' },
+          });
+          const data = await res.json();
           if (data.plan === 'free') {
             setIsPlanOpen(true)
           }
+          window.location.href = '/'
         }
       }}>
         <div className='mb-[22px]'>

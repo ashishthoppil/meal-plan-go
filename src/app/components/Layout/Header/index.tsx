@@ -105,12 +105,12 @@ const Header: React.FC = () => {
           </div>
           <div className='flex items-center gap-2 lg:gap-3'>
             {!user ? <button
-              className='hidden lg:block text-primary duration-300 bg-primary/15 hover:text-white hover:bg-primary font-medium text-lg py-2 px-6 rounded-full hover:cursor-pointer'
+              className='hidden lg:block text-primary duration-300 bg-primary/15 hover:text-white hover:bg-primary font-medium text-md py-2 px-6 rounded-lg hover:cursor-pointer'
               onClick={() => {
                 setIsSignInOpen(true)
               }}>
               Sign In
-            </button> : <span className='hidden lg:block'>Hey {user.user_metadata.full_name}</span>}
+            </button> : <span className='hidden lg:block'><span className='text-[22px]'>👋</span> Hey {user.user_metadata.full_name.split(' ')[0]}</span>}
             {isSignInOpen && (
               <div className='fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50'>
                 <div
@@ -132,16 +132,17 @@ const Header: React.FC = () => {
               </div>
             )}
             {!user ? <button
-              className='hidden lg:block bg-primary duration-300 text-white hover:bg-primary/15 hover:text-primary font-medium text-lg py-2 px-6 rounded-full hover:cursor-pointer'
+              className='hidden lg:block bg-primary duration-300 text-white hover:bg-primary/15 hover:text-primary font-medium text-md py-2 px-6 rounded-lg hover:cursor-pointer'
               onClick={() => {
                 setIsSignUpOpen(true)
               }}>
               Sign Up
             </button> : <button
-              className='hidden lg:block bg-primary duration-300 text-white hover:bg-primary/15 hover:text-primary font-medium text-lg py-2 px-6 rounded-full hover:cursor-pointer'
+              className='hidden lg:block bg-primary duration-300 text-white hover:bg-primary/15 hover:text-primary font-medium text-md py-2 px-6 rounded-lg hover:cursor-pointer'
               onClick={async () => {
                 const { error } = await supabase().auth.signOut()
                 if (!error) {
+                  localStorage.removeItem('mpg_email')
                   window.location.href = '/'
                 }
               }}>
@@ -239,7 +240,7 @@ const Header: React.FC = () => {
             {/* {headerLink.map((item, index) => (
               <MobileHeaderLink key={index} item={item} />
             ))} */}
-            {user ? <span className='text-center'>Hey {user.user_metadata.full_name}</span> : <></>}
+            {user ? <span className='text-center'><span className='text-[22px]'>👋</span> Hey {user.user_metadata.full_name.split(' ')[0]}</span> : <></>}
             <div className='mt-4 flex flex-col space-y-4 w-full'>
               {user ? 
               <button

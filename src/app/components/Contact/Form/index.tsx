@@ -11,13 +11,11 @@ import Link from 'next/link'
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
-    email: '',
     diet: '',
     people: '1',
     cuisine: '',
     note: '',
   })
-  const [showThanks, setShowThanks] = useState(false)
   const [loader, setLoader] = useState(false)
   const [isFormValid, setIsFormValid] = useState(false)
   const [isSignInOpen, setIsSignInOpen] = useState(false)
@@ -34,7 +32,7 @@ const ContactForm = () => {
   }, [isSignInOpen, isSignUpOpen]);
 
   useEffect(() => {
-    if (formData.email !== '' && formData.diet !== '') {
+    if (formData.diet !== '') {
       setIsFormValid(true)
     } else {
       setIsFormValid(false)
@@ -49,7 +47,6 @@ const ContactForm = () => {
     }))
   }
   const reset = () => {
-    formData.email = ''
     formData.diet = ''
     formData.people = ''
     formData.cuisine = ''
@@ -65,13 +62,13 @@ const ContactForm = () => {
     const res = await fetch('/api/generate-plan', {
       method: 'POST',
       body: JSON.stringify({
-          email: formData.email,
-          dietPreference: formData.diet,
-          peopleCount: formData.people,
-          cuisine: formData.cuisine,
-          additionalNote: formData.note,
-          user
-        }),
+        email: localStorage.getItem('mpg_email'),
+        dietPreference: formData.diet,
+        peopleCount: formData.people,
+        cuisine: formData.cuisine,
+        additionalNote: formData.note,
+        user
+      }),
       headers: { 'Content-Type': 'application/json' },
     });
 
@@ -119,133 +116,126 @@ const ContactForm = () => {
   }
 
   return (
-    <section id='reserve' className='scroll-mt-20'>
-      <div className='container'>
-        <div className='flex items-center justify-center relative border px-6 py-6 rounded-xl shadow-sm min-w-full min-h-full h-full  md:min-w-[35rem] md:min-h-[35rem] md:h-[35rem]'>
-          {!loader ? <form
-            onSubmit={handleSubmit}
-            className='flex flex-wrap w-full m-auto justify-between '>
-            <h2 className='text-primary text-[20px] mb-4 font-semibold tracking-tight '>
-              Tell us your preferences, we’ll handle the rest.
-            </h2>
-            <div className='sm:flex gap-6 w-full'>
-              <div className='mx-0 my-2.5 flex-1'>
-                <label htmlFor='email' className='pb-3 inline-block text-base'>
-                  Email Address
-                </label>
-                <input
-                  id='email'
-                  type='email'
-                  name='email'
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder='john.doe@example.com'
-                  className='w-full text-base px-4 rounded-md py-2.5 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'
-                />
-              </div>
-              <div className='mx-0 my-2.5 flex-1'>
-                <label htmlFor='diet' className='pb-3 inline-block text-base'>
-                  Diet Preference
-                </label>
-                <select
-                  name='diet'
-                  id='diet'
-                  required
-                  value={formData.diet}
-                  onChange={handleChange}
-                  className='w-full text-base px-4 rounded-md py-2.5 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'>
-                  <option value=''>Choose your Preference</option>
-                  <option value='No Preference'>No Preference</option>
-                  <option value='Vegetarian'>Vegetarian</option>
-                  <option value='Vegan'>Vegan</option>
-                  <option value='Keto'>Keto</option>
-                  <option value='Paleo'>Paleo</option>
-                  <option value='Gluten-Free'>Gluten-Free</option>
-                </select>
-              </div>
-            </div>
-            <div className='sm:flex gap-6 w-full'>              
-              
-              
-              <div className='mx-0 my-2.5 flex-1'>
-                <label htmlFor='people' className='pb-3 inline-block text-base'>
-                  No. Of People
-                </label>
-                <input
-                  id='people'
-                  type='number'
-                  name='people'
-                  value={formData.people}
-                  onChange={handleChange}
-                  placeholder='2'
-                  className='w-full text-base px-4 rounded-md py-2.5 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'
-                />
-              </div>
 
-              <div className='mx-0 my-2.5 flex-1'>
-                <label htmlFor='cuisine' className='pb-3 inline-block text-base'>
-                  Preferred Cuisine
-                </label>
-                <input
-                  id='cuisine'
-                  type='text'
-                  name='cuisine'
-                  value={formData.cuisine}
-                  onChange={handleChange}
-                  placeholder='American, Italian, Mexican, Asian, Mediterranean, etc.'
-                  className='w-full text-base px-4 rounded-md py-2.5 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'
-                />
-              </div>
+    <section id='home-section' className='bg-gray-50'>
+      <div className='container xl:pt-7 pt-0 md:pt-16'>
+        <div className='grid grid-cols-1 lg:grid-cols-12 items-center'>
+          <div className='lg:col-span-6 flex justify-center relative md:py-0'>
+            <section id='reserve' className='scroll-mt-20'>
+              <div className='container'>
+                {/* min-w-full min-h-full h-full  md:min-w-[35rem] md:min-h-[35rem] md:h-[35rem] */}
+                <div id='get-plan'   className='flex items-center justify-center relative border px-6 py-6 rounded-xl shadow-sm '>
+                  {!loader ? <form
+                    onSubmit={handleSubmit}
+                    className='flex flex-wrap w-full m-auto justify-between '>
+                    <h2 className='text-primary text-[16px] leading-7 md:text-[20px] mb-4 font-semibold tracking-tight '>
+                      Tell us your preferences, we’ll handle the rest ✅
+                    </h2>
+                    
+                    <div className='sm:flex gap-6 w-full'>
+                      <div className='mx-0 my-2.5 flex-1'>
+                        <label htmlFor='diet' className='pb-3 inline-block text-base'>
+                          Diet Preference
+                        </label>
+                        <select
+                          name='diet'
+                          id='diet'
+                          required
+                          value={formData.diet}
+                          onChange={handleChange}
+                          className='w-full text-base px-4 rounded-md py-2.5 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'>
+                          <option value=''>Choose your Preference</option>
+                          <option value='No Preference'>Standard (Includes Meat & Veg)</option>
+                          <option value='Vegetarian'>Vegetarian</option>
+                          <option value='Vegan'>Vegan</option>
+                          <option value='Keto'>Keto</option>
+                          <option value='Paleo'>Paleo</option>
+                          <option value='Gluten-Free'>Gluten-Free</option>
+                          <option value='Dairy-Free'>Dairy-Free</option>
+                          <option value='Diabetic-Friendly'>Diabetic-Friendly</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className='sm:flex gap-6 w-full'>              
+                      <div className='mx-0 my-2.5 flex-1'>
+                        <label htmlFor='people' className='pb-3 inline-block text-base'>
+                          No. Of People
+                        </label>
+                        <input
+                          id='people'
+                          type='number'
+                          name='people'
+                          value={formData.people}
+                          onChange={handleChange}
+                          placeholder='2'
+                          className='w-full text-base px-4 rounded-md py-2.5 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'
+                        />
+                      </div>
 
-            </div>
-            <div className='sm:flex gap-3 w-full'>
-              
-            </div>
-            <div className='w-full mx-0 my-2.5 flex-1'>
-              <label htmlFor='note' className='text-base inline-block'>
-                Additional Note
-              </label>
-              <textarea
-                id='note'
-                name='note'
-                value={formData.note}
-                onChange={handleChange}
-                className='w-full mt-2 rounded-md px-5 py-3 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'
-                placeholder='Anything else you want to communicate like allergies or other preferences'></textarea>
-            </div>
-            <div className='mx-0 my-2.5 w-full'>
-              <button
-                type='submit'
-                disabled={!isFormValid || loader}
-                className={`border leading-none px-6 text-lg font-medium py-4 rounded-full 
-                    ${
-                      !isFormValid || loader
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-primary border-primary text-white hover:bg-transparent hover:text-primary cursor-pointer'
-                    }`}>
-                {loader ? 'Creating Your Plan...' : 'Get Your Plan'}
-              </button>
-            </div>
-          </form> :
-          <div className='flex flex-col gap-10 items-center justify-center'>
-            <Image alt='Preparing Meal Plans' src={'/images/preparing.gif'} width={150} height={150} />
-            <span className='text-center'>Preparing your plan, should be ready in under a minute! ❤️</span>
-          </div>
-          }
-        </div>
-        <div className='shadow-xl flex bg-white p-2 pr-3 gap-5 items-center bottom-0 right-0 z-[1] rounded-xl relative mt-10 md:mt-0 md:absolute'>
-          <Image
-            src={'/images/hero/pizza.webp'}
-            alt='pizza-image'
-            width={68}
-            height={68}
-          />
-          <p className='text-lg font-normal text-[13px]'>
-            Plan your meals <br /> with MealPlanGo!
-          </p>
-        </div>
-      </div>
+                      {user && <div className='mx-0 my-2.5 flex-1'>
+                        <label htmlFor='cuisine' className='pb-3 inline-block text-base'>
+                          Preferred Cuisine
+                        </label>
+                        <input
+                          id='cuisine'
+                          type='text'
+                          name='cuisine'
+                          value={formData.cuisine}
+                          onChange={handleChange}
+                          placeholder='American, Italian, Mexican, Asian, Mediterranean, etc.'
+                          className='w-full text-base px-4 rounded-md py-2.5 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'
+                        />
+                      </div>}
+
+                    </div>
+
+                    {user && <div className='w-full mx-0 my-2.5 flex-1'>
+                      <label htmlFor='note' className='text-base inline-block'>
+                        Additional Note
+                      </label>
+                      <textarea
+                        id='note'
+                        name='note'
+                        value={formData.note}
+                        onChange={handleChange}
+                        className='w-full mt-2 rounded-md px-5 py-3 border-solid border transition-all duration-500 focus:border-primary focus:outline-0'
+                        placeholder='Anything else you want to communicate like allergies or other preferences'></textarea>
+                    </div>}
+                    <div className='mx-0 my-2.5 w-full'>
+                      <button
+                        type='submit'
+                        disabled={!isFormValid || loader}
+                        className={`border leading-none px-6 text-md font-medium py-4 rounded-lg w-full md:w-auto
+                            ${
+                              !isFormValid || loader
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-primary border-primary text-white hover:bg-transparent hover:text-primary cursor-pointer'
+                            }`}>
+                        {loader ? 'Creating Your Plan...' : '📋 Get Your Plan'}
+                      </button>
+                    </div>
+                    {!user && <span className='text-center md:text-left text-[12px] text-gray-400'>✨ Personalize after sign up — allergies, favorites, cuisines included.</span>}
+
+                  </form> :
+                  <div className='flex flex-col gap-10 items-center justify-center'>
+                    <Image alt='Preparing Meal Plans' src={'/images/preparing.gif'} width={150} height={150} />
+                    <span className='text-center'>Preparing your plan, should be ready in under a minute! ❤️</span>
+                  </div>
+                  }
+                </div>
+                <div className='shadow-xl flex bg-white p-2 pr-3 gap-5 items-center bottom-0 right-0 z-[1] rounded-xl relative mt-10 md:mt-0 md:absolute'>
+                  {/* <Image
+                    src={'/images/Logo/icon.webp'}
+                    alt='pizza-image'
+                    width={68}
+                    height={68}
+                  /> */}
+                  
+                  {/* <p className='text-lg font-normal text-[13px]'>
+                    Plan your meals <br /> with MealPlanGo!
+                  </p> */}
+                </div>
+              </div>
 
 
       {isSignInOpen && (
@@ -320,6 +310,28 @@ const ContactForm = () => {
               </div>
             )}
     </section>
+          </div>
+          <div className='lg:col-span-6 pl-0 md:pl-10'>
+            <h1 className='text-[2rem] md:text-[3rem] font-semibold mb-5 text-black lg:text-start text-center sm:leading-14 leading-10'>
+              Already helping 30+ people save hours and money every week ❤️
+            </h1>
+            <p className='text-black/55 text-lg font-normal mb-10 lg:text-start text-center'>
+              Save <strong>$100+</strong> monthly, cut food waste, and never stress about meals again.
+            </p>
+            <div className='flex flex-col sm:flex-row gap-5 items-center justify-center lg:justify-start'>
+              {/* <Link href='/#get-plan'> */}
+                <button onClick={() => setIsSignUpOpen(true)} className='text-md font-medium rounded-lg text-white py-3 px-8 bg-primary hover:text-primary border border-primary hover:bg-transparent hover:cursor-pointer transition ease-in-out duration-300'>
+                  🔓 Unlock your full 7-day plan
+                </button>
+              {/* </Link> */}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    
   )
 }
 

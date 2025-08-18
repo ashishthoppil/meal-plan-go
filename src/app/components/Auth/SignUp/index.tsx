@@ -36,6 +36,7 @@ const SignUp = ({ setIsSignUpOpen, setIsSignInOpen, setIsPlanOpen }: any) => {
       
       const { data: { user } } = await supabase().auth.signInWithPassword({ email, password })
       setIsPlanOpen(true)
+      localStorage.setItem('mpg_email', email);
       toast('Successfully Registered!', {
         progressClassName: 'bg-orange-500'
       })
