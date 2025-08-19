@@ -30,7 +30,6 @@ const Header: React.FC = () => {
   useEffect(() => {
     const fetchUser = async () => {
       const userInfo = await checkAuth();
-      console.log('userInfo', userInfo);
       setUser(userInfo);
     };
     fetchUser();
@@ -105,7 +104,7 @@ const Header: React.FC = () => {
           </div>
           <div className='flex items-center gap-2 lg:gap-3'>
             {!user ? <button
-              className='hidden lg:block text-primary duration-300 bg-primary/15 hover:text-white hover:bg-primary font-medium text-md py-2 px-6 rounded-lg hover:cursor-pointer'
+              className='hidden lg:block  duration-300 bg-primary/15 text-primary hover:text-white hover:bg-primary font-medium text-md py-2 px-6 rounded-lg hover:cursor-pointer'
               onClick={() => {
                 setIsSignInOpen(true)
               }}>
@@ -178,13 +177,13 @@ const Header: React.FC = () => {
                     aria-label='Close Sign Up Modal'>
                     <Icon
                       icon='material-symbols:close-rounded'
-                      width={24}
-                      height={24}
+                      width={16}
+                      height={16}
                       className='text-black hover:text-primary text-24 inline-block me-2'
                     />
                   </button>
                   <div className='flex flex-col gap-5 mt-5'>
-                    <span>Get <span className='font-semibold text-orange-500'>25</span> Meal Plans + Grocery Lists for just just 19¢ per plan (Billed monthly at $4.99)</span>
+                    <span>Get <span className='font-semibold text-orange-500'>25</span> Meal Plans + Grocery Lists for just just 19¢ per plan.</span>
                     <Link
                       className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
                       onClick={() => {

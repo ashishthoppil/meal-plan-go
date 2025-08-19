@@ -246,7 +246,7 @@ async function renderPdf(plan: PlanResponse, previewOnly: boolean, peopleCount: 
 }
 
 export async function POST(req: Request) {
-  const { email, dietPreference, peopleCount, cuisine, additionalNote, user } = await req.json();
+  const { email, dietPreference, peopleCount, cuisine, additionalNote, ingredients, user } = await req.json();
   let tries = 0;
   const forwardedFor = req.headers.get('x-forwarded-for') || '';
   // If there are multiple IPs, the first one is the client

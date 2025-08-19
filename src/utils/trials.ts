@@ -15,7 +15,6 @@ export async function checkAndConsumeTrial(opts: { ip?: string; ua?: string }) {
   const { data } = await admin.from('trial_uses')
     .select('ip_hash')
     .eq('ip_hash', opts.ip)
-    console.log('ip: ', data)
   if (data?.length && data.length > 0) return { allowed: false };
 
   // 2) consume (insert row)

@@ -1,6 +1,6 @@
 'use client'
 import Image from 'next/image'
-import React from 'react'
+import React, { useRef } from 'react'
 import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import Signin from '../../Auth/SignIn'
@@ -22,6 +22,9 @@ const ContactForm = () => {
   const [isSignUpOpen, setIsSignUpOpen] = useState(false)
   const [user, setUser] = useState<any>();
   const [isPlanOpen, setIsPlanOpen] = useState<any>(false);
+  const [downloadReady, setDownloadReady] = useState<any>(false);
+
+  const formRef = useRef<any>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -59,7 +62,9 @@ const ContactForm = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault()
     setLoader(true)
-
+    formRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
     const { data: { user } } = await supabase().auth.getUser();
     
 
@@ -100,22 +105,19 @@ const ContactForm = () => {
       setLoader(false)
       return;
     } else {
+      setDownloadReady(true);
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
 
       // Create a temporary link element
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'meal-plan.pdf'; // Filename
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      // Cleanup the URL object
-      window.URL.revokeObjectURL(url);
-      toast('Meal Plan Created!')
-      setLoader(false)
-      reset()
+      const a = document.getElementById('download-link') as HTMLAnchorElement | null;
+      if (a) {
+        a.href = url;
+        a.download = `${formData.diet}-Meal-Plan-${formData.people}-People.pdf`; // Filename
+        toast('Meal Plan Created!')
+        setLoader(false)
+        reset()
+      }
     } 
   }
 
@@ -128,8 +130,7 @@ const ContactForm = () => {
             <section id='reserve' className='scroll-mt-20'>
               <div className='container'>
                 
-                {/* min-w-full min-h-full h-full  md:min-w-[35rem] md:min-h-[35rem] md:h-[35rem] */}
-                <div id='get-plan'   className='flex items-center justify-center relative border px-6 py-6 rounded-xl shadow-sm '>
+                <div ref={formRef} id='get-plan'   className='flex items-center justify-center relative border px-6 py-6 rounded-xl shadow-sm '>
                   {!loader ? <form
                     onSubmit={handleSubmit}
                     className='flex flex-wrap w-full m-auto justify-between '>
@@ -279,24 +280,70 @@ const ContactForm = () => {
                     aria-label='Close Sign Up Modal'>
                     <Icon
                       icon='material-symbols:close-rounded'
-                      width={24}
-                      height={24}
+                      width={16}
+                      height={16}
                       className='text-black hover:text-primary text-24 inline-block me-2'
                     />
                   </button>
-                  <div className='flex flex-col gap-5 mt-5'>
-                    <span>Get <span className='font-semibold text-orange-500'>25</span> Meal Plans + Grocery Lists for just 19¢ per plan (Billed monthly at $4.99).</span>
+                  <div className='flex flex-col gap-5 mt-5 text-[14px]'>
+                    <span>Get <span className='font-semibold text-orange-500 text-[22px]'>25</span> Meal Plans + Grocery Lists for just <span className='font-semibold text-orange-500 text-[22px]'>19¢</span> per plan.</span>
+                    <div className='mt-5'>
+                      <h1 className='font-semibold text-[18px]'>Here’s what you’ll get 👇</h1>
+                      <ul className='text-center my-10'>
+                        <li>✅ 25 Weekly Meal Plans 🥗</li>
+                        <li>✅ Grocery List Tailored to the Meal Plans 📋</li>
+                        <li>✅ Personalize Meal Plans with Allergies & Favorites ✨</li>
+                      </ul>
+                    </div>
                     <Link
-                      className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
+                      className='bg-primary text-white px-4 py-2 rounded-lg border border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out font-semibold'
                       onClick={() => {
                         setIsPlanOpen(false)
                       }}
-                      // href='https://kulfi.lemonsqueezy.com/buy/16d53874-c04f-47bf-8a7b-0eaf88691ef0'
                       href={`https://kulfi.lemonsqueezy.com/buy/5fcaa060-e3d5-46cb-8b62-14759a5818e3?checkout[custom][user_id]=${user.id}`}
                       target='_blank'
                     >
                       Buy MealPlanGo - Monthly Subscription
                     </Link>
+                  </div>
+                  
+                </div>
+              </div>
+            )}
+
+            {downloadReady && (
+              <div className='fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50'>
+                <div
+                  className='relative mx-auto w-full max-w-md overflow-hidden rounded-lg bg-dark_grey/90 bg-white backdrop-blur-md px-8 pt-14 pb-8 text-center'>
+                  <button
+                    onClick={() => setDownloadReady(false)}
+                    className='absolute top-0 right-0 mr-4 mt-8 hover:cursor-pointer'
+                    aria-label='Close Sign Up Modal'>
+                    <Icon
+                      icon='material-symbols:close-rounded'
+                      width={16}
+                      height={16}
+                      className='text-black hover:text-primary text-24 inline-block me-2'
+                    />
+                  </button>
+                  <div className='flex flex-col gap-5 mt-5 text-[14px]'>
+                    <span className='text-[22px]'>Your Meal Plan is <span className='font-semibold text-orange-500'>Ready!</span></span>
+                    <div className='mt-5'>
+                      <h1 className='font-semibold text-[18px]'>Here’s what you chose 👇</h1>
+                      <ul className='text-center my-10'>
+                        <li>Diet Preference: {formData.diet}</li>
+                        <li>People Count: {formData.people}</li>
+                        {formData.cuisine ? <li>Cuisine: {formData.cuisine}</li> : <></>}
+                        {formData.note ? <li>Additional Info: {formData.note}</li> : <></>}
+                      </ul>
+                    </div>
+                    <a
+                      id='download-link'
+                      className='bg-primary text-white px-4 py-2 rounded-lg border border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out font-semibold'
+                    >
+                      📃 Download Meal Plan
+                    </a>
+                    
                   </div>
                   
                 </div>
@@ -308,11 +355,18 @@ const ContactForm = () => {
             <h1 className='text-[2rem] md:text-[3rem] font-semibold mb-5 text-black lg:text-start text-center sm:leading-14 leading-10'>
               Already helping 30+ people save hours and money every week ❤️
             </h1>
-            <p className='text-black/55 text-lg font-normal mb-10 lg:text-start text-center'>
+            {/* <p className='text-black/55 text-lg font-normal mb-10 lg:text-start text-center'>
               Save money and time, cut food waste, and never stress about meals again.
-            </p>
-            <div className='flex flex-col sm:flex-row gap-5 items-center justify-center lg:justify-start'>
-              {/* <Link href='/#get-plan'> */}
+            </p> */}
+            <div className='flex flex-col gap-5'>
+              <h1 className='font-semibold text-[18px] text-center md:text-left'>Here’s what you’ll get 👇</h1>
+              <ul className='text-center md:text-left'>
+                <li>✅ 25 7-Day Meal Plans 🥗</li>
+                <li>✅ Grocery List Tailored to the Plans 📋</li>
+                <li>✅ Personalize Meal Plans with Allergies & Favorites ✨</li>
+              </ul>
+            </div>
+            <div className='mt-5 flex flex-col sm:flex-row gap-5 items-center justify-center lg:justify-start'>
                 <button onClick={() => {
                   if (user) {
                     const recipient = "support@kulfi-ai.com";
@@ -326,7 +380,6 @@ const ContactForm = () => {
                 }} className='text-md font-medium rounded-lg text-white py-3 px-8 bg-primary hover:text-primary border border-primary hover:bg-transparent hover:cursor-pointer transition ease-in-out duration-300'>
                   {user ? 'Got Feedback or Suggestions?' : '🔓 Unlock your full 7-day plan'}
                 </button>
-              {/* </Link> */}
             </div>
           </div>
         </div>
