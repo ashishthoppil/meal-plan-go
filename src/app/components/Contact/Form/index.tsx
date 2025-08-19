@@ -23,6 +23,7 @@ const ContactForm = () => {
   const [user, setUser] = useState<any>();
   const [isPlanOpen, setIsPlanOpen] = useState<any>(false);
   const [downloadReady, setDownloadReady] = useState<any>(false);
+  const [downloadURL, setDownloadURL] = useState<any>('');
 
   const formRef = useRef<any>(null);
 
@@ -106,18 +107,13 @@ const ContactForm = () => {
       return;
     } else {
       setDownloadReady(true);
+      
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
-
-      // Create a temporary link element
-      const a = document.getElementById('download-link') as HTMLAnchorElement | null;
-      if (a) {
-        a.href = url;
-        a.download = `${formData.diet}-Meal-Plan-${formData.people}-People.pdf`; // Filename
-        toast('Meal Plan Created!')
-        setLoader(false)
-        reset()
-      }
+      setDownloadURL(url)
+      toast('Meal Plan Created!')
+      setLoader(false)
+      reset()
     } 
   }
 
@@ -331,7 +327,7 @@ const ContactForm = () => {
                     <div className='mt-5'>
                       <h1 className='font-semibold text-[18px]'>Here’s what you chose 👇</h1>
                       <ul className='text-center my-10'>
-                        <li>Diet Preference: {formData.diet}</li>
+                        <li>Diet Preference: {formData.diet === 'No Preference' ? 'Standard' : formData.diet}</li>
                         <li>People Count: {formData.people}</li>
                         {formData.cuisine ? <li>Cuisine: {formData.cuisine}</li> : <></>}
                         {formData.note ? <li>Additional Info: {formData.note}</li> : <></>}
@@ -339,6 +335,8 @@ const ContactForm = () => {
                     </div>
                     <a
                       id='download-link'
+                      href={downloadURL ?? '#'}
+                      download={`${formData.diet}-Meal-Plan-${formData.people}-People.pdf`}
                       className='bg-primary text-white px-4 py-2 rounded-lg border border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out font-semibold'
                     >
                       📃 Download Meal Plan
