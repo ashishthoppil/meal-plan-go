@@ -277,7 +277,7 @@ export async function POST(req: Request) {
     if (profile.plan === 'paid') {
       // Check if tries is already at the limit
       tries = profile.tries;
-      if ((profile.tries ?? 0) >= 20) {
+      if ((profile.tries ?? 0) >= 25) {
         return NextResponse.json(
           { error: 'limit_reached', message: 'You are out of credits for this month!' },
           { status: 402 }

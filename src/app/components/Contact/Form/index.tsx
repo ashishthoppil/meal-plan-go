@@ -27,6 +27,10 @@ const ContactForm = () => {
     const fetchUser = async () => {
       const userInfo = await checkAuth();
       setUser(userInfo);
+      const heroBtn = document.getElementById('hero_button')
+      if (userInfo && heroBtn) {
+        heroBtn.innerHTML = '👉 Get My 7-Day Plan'
+      }
     };
     fetchUser();
   }, [isSignInOpen, isSignUpOpen]);
@@ -215,7 +219,7 @@ const ContactForm = () => {
                         {loader ? 'Creating Your Plan...' : '📋 Get Your Plan'}
                       </button>
                     </div>
-                    {!user && <span className='text-center md:text-left text-[12px] text-gray-400'>✨ Personalize after sign up — allergies, favorites, cuisines included.</span>}
+                    {!user && <span className='text-center md:text-left text-[12px] text-gray-400'>✨ More personalization options available after sign up — allergies, favorites, cuisines included.</span>}
 
                   </form> :
                   <div className='flex flex-col gap-10 items-center justify-center'>
@@ -281,7 +285,7 @@ const ContactForm = () => {
                     />
                   </button>
                   <div className='flex flex-col gap-5 mt-5'>
-                    <span>Get <span className='font-semibold text-orange-500'>20</span> Meal Plans + Grocery Lists for just $4.99 per month!</span>
+                    <span>Get <span className='font-semibold text-orange-500'>25</span> Meal Plans + Grocery Lists for just 19¢ per plan (Billed monthly at $4.99).</span>
                     <Link
                       className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
                       onClick={() => {
@@ -305,12 +309,22 @@ const ContactForm = () => {
               Already helping 30+ people save hours and money every week ❤️
             </h1>
             <p className='text-black/55 text-lg font-normal mb-10 lg:text-start text-center'>
-              Save <strong>$100+</strong> monthly, cut food waste, and never stress about meals again.
+              Save money and time, cut food waste, and never stress about meals again.
             </p>
             <div className='flex flex-col sm:flex-row gap-5 items-center justify-center lg:justify-start'>
               {/* <Link href='/#get-plan'> */}
-                <button onClick={() => setIsSignUpOpen(true)} className='text-md font-medium rounded-lg text-white py-3 px-8 bg-primary hover:text-primary border border-primary hover:bg-transparent hover:cursor-pointer transition ease-in-out duration-300'>
-                  🔓 Unlock your full 7-day plan
+                <button onClick={() => {
+                  if (user) {
+                    const recipient = "support@kulfi-ai.com";
+                    const subject = "Feedback for MealPlanGo";
+                    const body = "Enter your suggestion here";
+                    const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                    window.location.href = mailtoLink;
+                  } else {
+                    setIsSignUpOpen(true)
+                  }
+                }} className='text-md font-medium rounded-lg text-white py-3 px-8 bg-primary hover:text-primary border border-primary hover:bg-transparent hover:cursor-pointer transition ease-in-out duration-300'>
+                  {user ? 'Got Feedback or Suggestions?' : '🔓 Unlock your full 7-day plan'}
                 </button>
               {/* </Link> */}
             </div>

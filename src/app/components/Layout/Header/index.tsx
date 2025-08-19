@@ -184,7 +184,7 @@ const Header: React.FC = () => {
                     />
                   </button>
                   <div className='flex flex-col gap-5 mt-5'>
-                    <span>Get <span className='font-semibold text-orange-500'>20</span> Meal Plans + Grocery Lists for just $4.99 per month!</span>
+                    <span>Get <span className='font-semibold text-orange-500'>25</span> Meal Plans + Grocery Lists for just just 19¢ per plan (Billed monthly at $4.99)</span>
                     <Link
                       className='bg-primary text-white px-4 py-2 rounded-lg border  border-primary hover:text-primary hover:bg-transparent hover:cursor-pointer transition duration-300 ease-in-out'
                       onClick={() => {
