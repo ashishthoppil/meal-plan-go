@@ -113,7 +113,6 @@ const ContactForm = () => {
       setDownloadURL(url)
       toast('Meal Plan Created!')
       setLoader(false)
-      reset()
     } 
   }
 
@@ -312,7 +311,10 @@ const ContactForm = () => {
                 <div
                   className='relative mx-auto w-full max-w-md overflow-hidden rounded-lg bg-dark_grey/90 bg-white backdrop-blur-md px-8 pt-14 pb-8 text-center'>
                   <button
-                    onClick={() => setDownloadReady(false)}
+                    onClick={() => {
+                      setDownloadReady(false);
+                      reset()
+                    }}
                     className='absolute top-0 right-0 mr-4 mt-8 hover:cursor-pointer'
                     aria-label='Close Sign Up Modal'>
                     <Icon
