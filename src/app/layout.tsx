@@ -18,10 +18,10 @@ export default function RootLayout({
     <html lang='en' suppressHydrationWarning>
       
       <body className={`${font.className}`}>
-        {/* <Header /> */}
+        <Header />
         {children}
-        {/* <Footer /> */}
-        {/* <ScrollToTop /> */}
+        <Footer />
+        <ScrollToTop />
         <Analytics />
       </body>
     </html>
