@@ -63,9 +63,7 @@ const ContactForm = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault()
     setLoader(true)
-    formRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
+
     const { data: { user } } = await supabase().auth.getUser();
     
 

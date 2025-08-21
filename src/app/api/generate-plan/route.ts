@@ -27,7 +27,7 @@ export type DayPlan = {
   lunch: Meal;
   dinner: Meal;
 };
-export type GroceryItem = { ingredient: string; quantity: string };
+export type GroceryItem = any;
 export type PlanResponse = { meals: DayPlan[]; groceryList: GroceryItem[] };
 
 // ---------- Helpers
@@ -42,7 +42,7 @@ function safeParsePlan(content: string): PlanResponse {
   // const raw = stripCodeFence(content).trim();
   try {
     const parsed = JSON.parse(content);
-    if (!parsed || !Array.isArray(parsed.meals) || !Array.isArray(parsed.groceryList)) {
+    if (!parsed) {
       throw new Error('Malformed JSON structure.');
     }
     return parsed as PlanResponse;
@@ -81,7 +81,7 @@ Diet compliance:
 }
 
 function buildPrompt({ peopleCount, dietPreference, cuisine, additionalNote }: any) {
-  return `You are a professional meal planner.\nCreate a 7-day meal plan for ${peopleCount} people.\Diet should STRICTLY be "${dietPreference}". Violation = invalid output.\nPreferred cuisines: ${cuisine}.\nAdditional note: ${additionalNote || 'None'}.\nNumber of meals a day: 3.\n\nSTRICTLY return valid JSON matching this format (no prose, no explanations, no markdown fences):\n{\n  "meals": [\n    {\n      "breakfast": {\n        "dish": "Name",\n        "cookingDuration": "10 minutes. Eg: 10 minutes",\n        "ingredients": ["..."],\n        "recipe": ["Step 1", "Step 2"]\n      },\n      "lunch": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] },\n      "dinner": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] }\n    }\n  ],\n  "groceryList": [ { "ingredient": "Chicken Breast", "quantity": "1.1 lb (500 g)" } ]\n}\n\nRules:\n- meals array MUST have exactly 7 entries (Mon..Sun).\n- Keep meals simple and healthy for busy people.\n- Use METRIC units for quantities in groceryList (g, ml, etc.). Only give items that are available in Grocery stores.\n- Avoid brand names.\n- Recipes can be detailed. \n- Come up with interesting yet easy to prepare dishes.\n- No dish may repeat across the 7 days.\n- Day 1 Breakfast must not contain oats.\n- Use pantry shortcuts common in US/UK (e.g., canned beans, frozen veg) where it meaningfully reduces time.\n- Ensure all meals comply with "${dietPreference}" (e.g., vegan → plant yogurt/milk, tofu/tempeh; vegetarian → eggs/dairy allowed; gluten-free → use GF wraps/pasta).\n- Rotate proteins and grains across the week using ONLY options allowed by the diet (e.g., legumes, tofu/tempeh, paneer/eggs for vegetarian; tofu/tempeh/legumes for vegan). Do NOT include poultry, beef, pork, fish, or seafood unless the diet explicitly allows it.\n- Make sure you stick to the preferred cuisine which is ${cuisine}
+  return `You are a professional meal planner.\nCreate a 7-day meal plan for ${peopleCount} people.\Diet should STRICTLY be "${dietPreference}". Violation = invalid output.\nPreferred cuisines: ${cuisine}.\nAdditional note: ${additionalNote || 'None'}.\nNumber of meals a day: 3.\n\nSTRICTLY return valid JSON matching this format (no prose, no explanations, no markdown fences):\n{\n  "meals": [\n    {\n      "breakfast": {\n        "dish": "Name",\n        "cookingDuration": "10 minutes. Eg: 10 minutes",\n        "ingredients": ["..."],\n        "recipe": ["Step 1", "Step 2"]\n      },\n      "lunch": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] },\n      "dinner": { "dish": "...", "cookingDuration": "...", "ingredients": ["..."], "recipe": ["..."] }\n    }\n  ],\n  "groceryList": [ "produce": [{ "ingredient": "Apples", "quantity": "1 lb (500 g)" }, ...], "condiments": [{ "ingredient": "Mayo", "quantity": "1.1 lb (500 g)" }, ...] ]\n}\n\nRules:\n- meals array MUST have exactly 7 entries (Mon..Sun).\n- The grocery list should be categorized into categories like 'Produce', 'Condiments' and so on.\n- Keep meals simple and healthy for busy people.\n- Use METRIC units for quantities in groceryList (g, ml, etc.). Only give items that are available in Grocery stores.\n- Avoid brand names.\n- Recipes can be detailed. \n- Come up with interesting yet easy to prepare dishes.\n- No dish may repeat across the 7 days.\n- Day 1 Breakfast must not contain oats.\n- Use pantry shortcuts common in US/UK (e.g., canned beans, frozen veg) where it meaningfully reduces time.\n- Ensure all meals comply with "${dietPreference}" (e.g., vegan → plant yogurt/milk, tofu/tempeh; vegetarian → eggs/dairy allowed; gluten-free → use GF wraps/pasta).\n- Rotate proteins and grains across the week using ONLY options allowed by the diet (e.g., legumes, tofu/tempeh, paneer/eggs for vegetarian; tofu/tempeh/legumes for vegan). Do NOT include poultry, beef, pork, fish, or seafood unless the diet explicitly allows it.\n- Make sure you stick to the preferred cuisine which is ${cuisine}
   ${dietGuards(dietPreference)}`;
 }
 
@@ -159,27 +159,11 @@ async function renderPdf(plan: PlanResponse, previewOnly: boolean, peopleCount: 
     y -= 6 + marginBottom;
   };
 
-  // const pngImage = await pdf.embedPng(await fetch('https://www.meal-plan-go.online/images/Logo/icon.png').then(r => r.arrayBuffer()));
-  // get its dimensions
-  // const imgWidth = 50; // desired width in pt
-  // const imgHeight = (pngImage.height / pngImage.width) * imgWidth;
-
-  // const imgX = pageWidth - pageMargin - imgWidth;
-
-  // // place it near the top (say 40pt down from the edge)
-  // const imgY = pageHeight - pageMargin - imgHeight;
-
-  // page.drawImage(pngImage, {
-  //   x: imgX,
-  //   y: imgY,
-  //   width: imgWidth,
-  //   height: imgHeight,
-  // });
   drawText('', 20, true, 'center', true, 20);
   // Title
   drawText('7-Day Meal Plan', 20, true, 'center', true, 20);
   // divider();
-  drawText(`Your plan for ${peopleCount ? peopleCount : 1} person(s) • ${dietPreference} preference`, 12, false, 'left', false, 0)
+  drawText(`Your plan for ${peopleCount ? peopleCount : 1} person(s) • ${dietPreference === 'No Preference' ? 'Standard' : dietPreference} preference`, 12, false, 'left', false, 0)
   divider({ marginTop: 0, marginBottom: 40 });
 
   const dayLabels = ['Day 1','Day 2','Day 3','Day 4','Day 5','Day 6','Day 7'];
@@ -213,12 +197,32 @@ async function renderPdf(plan: PlanResponse, previewOnly: boolean, peopleCount: 
   });
 
   // Grocery List
-  drawText('Grocery List', 14, true);
-  const items = previewOnly ? plan.groceryList.slice(0, 8) : plan.groceryList;
-  items.forEach((g) => drawText(`• ${g.ingredient} — ${g.quantity}`, 12));
-  if (previewOnly && plan.groceryList.length > 8) {
-    drawText('Sign in to view the full grocery list…', 12);
+  drawText('Grocery List', 14, true, 'left', true, 10);
+
+  const categories = Object.keys(plan.groceryList);
+
+  categories.forEach((category) => {
+  drawText(category.charAt(0).toUpperCase() + category.slice(1), 13, true);
+
+  // Either show only 2 items per category (preview) or all
+  const items = previewOnly
+    ? plan.groceryList[category as any].slice(0, 2)
+    : plan.groceryList[category as any];
+
+  items.forEach((g: any, ind: number) => {
+    drawText(`• ${g.ingredient} — ${g.quantity}`, 12, false, 'left', false, ind === items.length - 1 ? 5 : 0);
+  });
+
+  // If in preview mode and category has more than 2 items, show a message
+  if (previewOnly && plan.groceryList[category as any].length > 2) {
+    drawText('Sign in to view more…', 12);
   }
+});
+  // const items = previewOnly ? plan.groceryList.slice(0, 8) : plan.groceryList;
+  // items.forEach((g) => drawText(`• ${g.ingredient} — ${g.quantity}`, 12));
+  // if (previewOnly && plan.groceryList.length > 8) {
+  //   drawText('Sign in to view the full grocery list…', 12);
+  // }
 
   drawText('Generated by MealPlanGo • meal-plan-go.online', 8, false, 'center');
 
@@ -301,10 +305,11 @@ export async function POST(req: Request) {
   });
 
   const responseContent = completion.choices[0]?.message?.content ?? '';
+
   const plan = safeParsePlan(responseContent);
 
   // const html = planToHTML(plan, { title: '7‑Day Meal Plan', people: Number(peopleCount) || 1 }, trial.allowed);
-  const pdf = await renderPdf(plan, trial.allowed, peopleCount, dietPreference);
+  const pdf = await renderPdf(plan, !user && trial.allowed, peopleCount, dietPreference);
   if (user) {
     const { error: incErr } = await admin
       .from('profiles')
